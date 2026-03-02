@@ -1,9 +1,6 @@
 import { useState } from "react";
 
 // ─── Design Tokens ───────────────────────────────────────────────
-// Mahjong-inspired: ivory tile base, deep jade/vermillion accents,
-// traditional Chinese border motifs rendered in SVG
-
 const SUITS = {
   spades:   { symbol: "♠", zh: "黑", color: "#1a1a2e", accent: "#2d4a3e" },
   hearts:   { symbol: "♥", zh: "心", color: "#8b1a1a", accent: "#c0392b" },
@@ -31,22 +28,10 @@ const RANKS = [
 function MahjongBorder({ color }) {
   return (
     <g>
-      {/* outer frame */}
       <rect x="3" y="3" width="94" height="134" rx="6" ry="6"
         fill="none" stroke={color} strokeWidth="1.5" opacity="0.35" />
-      {/* inner frame */}
       <rect x="6" y="6" width="88" height="128" rx="4" ry="4"
         fill="none" stroke={color} strokeWidth="0.6" opacity="0.2" />
-      {/* corner diamonds */}
-      {[[10,10],[90,10],[10,130],[90,130]].map(([cx,cy], i) => (
-        <g key={i} transform={`translate(${cx},${cy})`}>
-          <rect x="-4" y="-4" width="8" height="8" rx="1"
-            fill={color} opacity="0.18" transform="rotate(45)" />
-          <rect x="-2" y="-2" width="4" height="4" rx="0.5"
-            fill={color} opacity="0.3" transform="rotate(45)" />
-        </g>
-      ))}
-      {/* top/bottom center ornament */}
       {[[50,5],[50,135]].map(([cx,cy], i) => (
         <g key={i} transform={`translate(${cx},${cy})`}>
           <line x1="-8" y1="0" x2="8" y2="0" stroke={color} strokeWidth="0.8" opacity="0.25" />
@@ -61,9 +46,7 @@ function MahjongBorder({ color }) {
 function TileBackground() {
   return (
     <>
-      {/* base ivory */}
       <rect width="100" height="140" rx="8" ry="8" fill="#f5f0e8" />
-      {/* subtle grain texture via pattern */}
       <defs>
         <pattern id="grain" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
           <rect width="4" height="4" fill="transparent" />
@@ -76,7 +59,6 @@ function TileBackground() {
         </pattern>
       </defs>
       <rect width="100" height="140" rx="8" ry="8" fill="url(#grain)" />
-      {/* warm ivory shadow at edges */}
       <rect width="100" height="140" rx="8" ry="8"
         fill="none" stroke="#c8b89a" strokeWidth="1" opacity="0.4" />
     </>
@@ -103,13 +85,11 @@ function CardBack() {
       </defs>
       <rect width="100" height="140" rx="8" ry="8" fill="url(#backPattern)" />
       <rect width="100" height="140" rx="8" ry="8" fill="url(#backVignette)" />
-      {/* center emblem */}
       <g transform="translate(50,70)">
         <circle cx="0" cy="0" r="22" fill="none" stroke="#c8a951" strokeWidth="1" opacity="0.7" />
         <circle cx="0" cy="0" r="16" fill="none" stroke="#c8a951" strokeWidth="0.5" opacity="0.4" />
         <text x="0" y="5" textAnchor="middle" fontSize="18"
           fontFamily="serif" fill="#c8a951" opacity="0.9">牌</text>
-        {/* 8 radial ticks */}
         {Array.from({length: 8}, (_,i) => {
           const a = (i * 45 * Math.PI) / 180;
           return <line key={i}
@@ -159,23 +139,17 @@ function FaceIllustration({ rank, suit }) {
   const label = { J: "將", Q: "皇", K: "王" }[rank.value];
   return (
     <g>
-      {/* frame */}
       <rect x="20" y="28" width="60" height="84" rx="4" ry="4"
         fill={accent} opacity="0.08" />
       <rect x="20" y="28" width="60" height="84" rx="4" ry="4"
         fill="none" stroke={color} strokeWidth="0.8" opacity="0.2" />
-      {/* character */}
+      <text x="50" y="70" textAnchor="middle" dominantBaseline="central"
+        fontSize="90" fontFamily="serif" fill={color} opacity="0.25">
+        {SUITS[suit].symbol}
+      </text>
       <text x="50" y="72" textAnchor="middle" dominantBaseline="central"
         fontSize="32" fontFamily="serif" fill={color} opacity="0.85"
         fontWeight="bold">{label}</text>
-      {/* suit symbol below */}
-      <text x="50" y="96" textAnchor="middle" dominantBaseline="central"
-        fontSize="14" fontFamily="serif" fill={color} opacity="0.5">
-        {SUITS[suit].symbol}
-      </text>
-      {/* decorative lines */}
-      <line x1="28" y1="44" x2="72" y2="44" stroke={color} strokeWidth="0.5" opacity="0.15" />
-      <line x1="28" y1="110" x2="72" y2="110" stroke={color} strokeWidth="0.5" opacity="0.15" />
     </g>
   );
 }
@@ -197,21 +171,39 @@ function AceCenter({ suit }) {
 }
 
 // ─── Single Playing Card SVG ──────────────────────────────────────
-function PlayingCard({ rank, suit, faceDown = false, selected = false, onClick }) {
+// width / height props control the rendered size of the card.
+// All internal artwork lives in a fixed 100×140 viewBox, so the SVG
+// viewport scaling takes care of everything automatically — no math needed
+// inside the card components themselves.
+function PlayingCard({
+  rank,
+  suit,
+  faceDown = false,
+  selected = false,
+  onClick,
+  width = 80,
+  height = 112,
+}) {
   const { color, zh } = SUITS[suit];
   const isFace = ["J","Q","K"].includes(rank.value);
   const isAce  = rank.value === "A";
 
+  // Lift scales proportionally with card height
+  const liftPx = Math.round(height * 0.107);
+
   return (
     <div onClick={onClick} style={{
-      width: 80, height: 112, cursor: onClick ? "pointer" : "default",
-      transform: selected ? "translateY(-12px)" : "translateY(0)",
+      width,
+      height,
+      cursor: onClick ? "pointer" : "default",
+      transform: selected ? `translateY(-${liftPx}px)` : "translateY(0)",
       transition: "transform 0.18s cubic-bezier(.34,1.56,.64,1)",
       filter: selected
         ? "drop-shadow(0 8px 16px rgba(200,169,81,0.5))"
         : "drop-shadow(0 3px 6px rgba(0,0,0,0.25))",
       flexShrink: 0,
     }}>
+      {/* viewBox stays 100×140 always; width/height on <svg> drives the scale */}
       <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", height: "100%", display: "block" }}>
 
@@ -220,32 +212,35 @@ function PlayingCard({ rank, suit, faceDown = false, selected = false, onClick }
             <TileBackground />
             <MahjongBorder color={color} />
 
-            {/* top-left rank + suit */}
-            <text x="10" y="16" fontSize="11" fontFamily="serif"
-              fill={color} fontWeight="bold">{rank.value}</text>
-            <text x="10" y="27" fontSize="9" fontFamily="serif"
-              fill={color} opacity="0.7">{zh}</text>
-            <text x="10" y="38" fontSize="9" fontFamily="serif"
-              fill={color}>{SUITS[suit].symbol}</text>
+            {/* top-left rank + suit — block starts at y=10, lines spaced 11px */}
+            <g transform="translate(14, 10)">
+              <text x="0" y="0"  fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
+                dominantBaseline="hanging" textAnchor="middle">{rank.value}</text>
+              <text x="0" y="16" fontSize="9"  fontFamily="serif" fill={color} opacity="0.7"
+                dominantBaseline="hanging" textAnchor="middle">{zh}</text>
+              <text x="0" y="25" fontSize="9"  fontFamily="serif" fill={color}
+                dominantBaseline="hanging" textAnchor="middle">{SUITS[suit].symbol}</text>
+            </g>
 
             {/* bottom-right (rotated) */}
             <g transform="rotate(180,50,70)">
-              <text x="10" y="16" fontSize="11" fontFamily="serif"
-                fill={color} fontWeight="bold">{rank.value}</text>
-              <text x="10" y="27" fontSize="9" fontFamily="serif"
-                fill={color} opacity="0.7">{zh}</text>
-              <text x="10" y="38" fontSize="9" fontFamily="serif"
-                fill={color}>{SUITS[suit].symbol}</text>
+              <g transform="translate(14, 10)">
+                <text x="0" y="0"  fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
+                  dominantBaseline="hanging" textAnchor="middle">{rank.value}</text>
+                <text x="0" y="16" fontSize="9"  fontFamily="serif" fill={color} opacity="0.7"
+                  dominantBaseline="hanging" textAnchor="middle">{zh}</text>
+                <text x="0" y="25" fontSize="9"  fontFamily="serif" fill={color}
+                  dominantBaseline="hanging" textAnchor="middle">{SUITS[suit].symbol}</text>
+              </g>
             </g>
-
+            
             {/* center */}
             {isAce && <AceCenter suit={suit} />}
             {isFace && <FaceIllustration rank={rank} suit={suit} />}
             {!isAce && !isFace && getPipPositions(rank.num).map(([px,py], i) => (
-              <Pip key={i} suit={suit} size={13} x={px} y={py} />
+              <Pip key={i} suit={suit} size={24} x={px} y={py} />
             ))}
 
-            {/* selected shimmer */}
             {selected && (
               <rect width="100" height="140" rx="8" ry="8"
                 fill="#c8a951" opacity="0.08" />
@@ -262,10 +257,21 @@ const FULL_DECK = Object.keys(SUITS).flatMap(suit =>
   RANKS.map(rank => ({ rank, suit }))
 );
 
+const SIZE_PRESETS = [
+  { label: "XS", width: 48,  height: 67  },
+  { label: "S",  width: 64,  height: 90  },
+  { label: "M",  width: 80,  height: 112 },
+  { label: "L",  width: 110, height: 154 },
+  { label: "XL", width: 150, height: 210 },
+];
+
 export default function DeckPreview() {
-  const [selected, setSelected] = useState(new Set());
+  const [selected, setSelected]     = useState(new Set());
   const [filterSuit, setFilterSuit] = useState("all");
-  const [showBack, setShowBack] = useState(false);
+  const [showBack, setShowBack]     = useState(false);
+  const [sizeIdx, setSizeIdx]       = useState(2); // default "M"
+
+  const { width, height } = SIZE_PRESETS[sizeIdx];
 
   const toggle = (key) => setSelected(prev => {
     const next = new Set(prev);
@@ -301,7 +307,7 @@ export default function DeckPreview() {
 
       {/* Controls */}
       <div style={{ display: "flex", gap: 12, justifyContent: "center",
-        flexWrap: "wrap", marginBottom: 32 }}>
+        flexWrap: "wrap", marginBottom: 16 }}>
         {["all", ...Object.keys(SUITS)].map(s => (
           <button key={s} onClick={() => setFilterSuit(s)} style={{
             padding: "6px 18px", borderRadius: 4, border: "1px solid",
@@ -333,6 +339,26 @@ export default function DeckPreview() {
         )}
       </div>
 
+      {/* Size picker */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "center",
+        marginBottom: 28, alignItems: "center" }}>
+        <span style={{ color: "#c8b89a", fontSize: 12, opacity: 0.6, letterSpacing: 1 }}>SIZE</span>
+        {SIZE_PRESETS.map((p, i) => (
+          <button key={p.label} onClick={() => setSizeIdx(i)} style={{
+            width: 36, padding: "4px 0", borderRadius: 4, border: "1px solid",
+            borderColor: sizeIdx === i ? "#c8a951" : "#2d4a3e",
+            background: sizeIdx === i ? "#c8a951" : "transparent",
+            color: sizeIdx === i ? "#0d1f16" : "#c8b89a",
+            cursor: "pointer", fontSize: 12, fontFamily: "serif", letterSpacing: 1,
+          }}>
+            {p.label}
+          </button>
+        ))}
+        <span style={{ color: "#c8b89a", fontSize: 11, opacity: 0.4, marginLeft: 4 }}>
+          {width}×{height}px
+        </span>
+      </div>
+
       {/* Selected info */}
       {selected.size > 0 && (
         <div style={{ textAlign: "center", marginBottom: 20,
@@ -344,7 +370,8 @@ export default function DeckPreview() {
       {/* Card Grid */}
       <div style={{
         display: "flex", flexWrap: "wrap", gap: 10,
-        justifyContent: "center", maxWidth: 900, margin: "0 auto",
+        justifyContent: "center", maxWidth: 1200, margin: "0 auto",
+        paddingBottom: Math.round(height * 0.12),
       }}>
         {displayed.map(({ rank, suit }) => {
           const key = `${rank.value}-${suit}`;
@@ -356,6 +383,8 @@ export default function DeckPreview() {
               faceDown={showBack}
               selected={selected.has(key)}
               onClick={() => toggle(key)}
+              width={width}
+              height={height}
             />
           );
         })}
