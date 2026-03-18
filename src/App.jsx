@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import PlayingCardDeck from './components/Card/PlayingCardDeck'
+import MainPage from './pages/MainPage.tsx';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,7 +13,8 @@ function App() {
 
   return (
     <>
-      <div>
+      <MainPage/>
+      {/* <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
@@ -24,7 +26,8 @@ function App() {
       <div className="card">
         <button onClick={() => setCount(c => c + 1)}>count is {count}</button>
         <button onClick={() => setShowDeck(true)}>🃏 View Card Deck</button>
-      </div>
+      </div> */}
+      
     </>
   )
 }

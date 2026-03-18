@@ -33,5 +33,8 @@ src/
 └── hooks/        # Custom React hooks
 ```
 
+## Assets
+Background music by "https://pixabay.com/users/daljit_kundi-34230998/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=378027" Daljit Kundi from https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=378027" Pixabay
+
 ## License
 MIT
