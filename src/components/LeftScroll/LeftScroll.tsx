@@ -23,7 +23,7 @@ const LeftScroll = ({ }) => {
         },
       },
     }}>
-      <img style={{ position: "absolute", bottom: "-96px", left: "-8px", width: "calc(100% + 16px)" }} src={BottomCorner} alt="My Icon" />
+      <img style={{ position: "absolute", bottom: "-96px", left: "-8px", width: "calc(100% + 15.5px)" }} src={BottomCorner} alt="My Icon" />
       <img style={{ position: "absolute", top: "-100px", width: "300px", transform: "translate(-48px,0)" }} src={TopDecor} alt="My Icon" />
       <Box sx={{ height: "100%", borderLeft: "2px solid", borderRight: "2px solid", borderColor: "#E4B588" }}>
       </Box>
