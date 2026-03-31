@@ -4,31 +4,34 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import PlayingCardDeck from './components/Card/PlayingCardDeck'
 import MainPage from './pages/MainPage.tsx';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { usePhaseSequence } from './engine/useCardGameStore.ts'
+
+const theme = createTheme({
+  components: {
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: 'none',
+            boxShadow: 'none',
+          },
+          '&:focus': {
+            outline: 'none',
+          },
+        },
+      },
+    },
+  },
+});
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [showDeck, setShowDeck] = useState(false)
-
-  if (showDeck) return <PlayingCardDeck />
+  usePhaseSequence();
 
   return (
-    <>
-      <MainPage/>
-      {/* <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount(c => c + 1)}>count is {count}</button>
-        <button onClick={() => setShowDeck(true)}>🃏 View Card Deck</button>
-      </div> */}
-      
-    </>
+    <ThemeProvider theme={theme}>
+      <MainPage />
+    </ThemeProvider>
   )
 }
 

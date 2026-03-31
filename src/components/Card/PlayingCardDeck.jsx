@@ -252,6 +252,21 @@ export default function PlayingCard({
   );
 }
 
+export function PlayingCardBack({ width = 80, height = 112, }) {
+  return (
+    <div style={{
+      width,
+      height,
+      flexShrink: 0,
+    }}>
+      <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", height: "100%", display: "block" }}>
+        <CardBack />
+      </svg>
+    </div>
+  )
+}
+
 // // ─── Full Deck Preview App ────────────────────────────────────────
 // const FULL_DECK = Object.keys(SUITS).flatMap(suit =>
 //   RANKS.map(rank => ({ rank, suit }))
