@@ -25,6 +25,7 @@ type CardGameState = {
   drawCards: (amount: number) => void
   toggleSelect: (id: string) => void
   playSelected: () => void
+  discardSelected: () => void
   setPhase: (phase: GamePhase) => void
   clearPlayed: () => void
   resetGame: () => void
@@ -104,6 +105,10 @@ export const useCardGame = create<CardGameState>((set) => ({
         console.log('[drawCard] deck is empty, skipping')
         return state
       }
+      if (state.hand.length >= 13) {
+        console.log('Max hand length is 13, skipping')
+        return state
+      }
       const [top, ...rest] = state.deck
       console.log('[drawCard] drew:', top.rank, top.suit, '| deck remaining:', rest.length)
       return { deck: rest, hand: [...state.hand, top] }
@@ -135,24 +140,38 @@ export const useCardGame = create<CardGameState>((set) => ({
   playSelected: () =>
     set((state) => {
       if (state.phase !== 'playing') {
-        console.log('[playSelected] blocked — phase is', state.phase)
         return state
       }
       if (state.selected.length === 0) {
-        console.log('[playSelected] blocked — nothing selected')
         return state
       }
       const toPlay = state.hand.filter((c) => state.selected.includes(c.id))
       const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
-      console.log('[playSelected] playing:', toPlay.map(c => `${c.rank}${c.suit[0]}`))
-      console.log('[playSelected] hand before:', state.hand.map(c => `${c.rank}${c.suit[0]}`))
-      console.log('[playSelected] hand after:', nextHand.map(c => `${c.rank}${c.suit[0]}`))
-      console.log('[playSelected] phase: playing → resolving')
       return {
         hand: nextHand,
-        played: toPlay,   // ← replace, not append (per the bug fix)
+        played: sortByRankFn(sortBySuitFn(toPlay)),   // ← replace, not append (per the bug fix)
         selected: [],
         phase: 'resolving',
+      }
+    }),
+
+  discardSelected: () =>
+    set((state) => {
+      if (state.phase !== 'playing') {
+        console.log('[discardSelected] blocked — phase is', state.phase)
+        return state
+      }
+      if (state.selected.length === 0) {
+        console.log('[discardSelected] blocked — nothing selected')
+        return state
+      }
+      const toDiscard = state.hand.filter((c) => state.selected.includes(c.id))
+      const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
+      console.log('[discardSelected] discarding:', toDiscard.map(c => `${c.rank}${c.suit[0]}`))
+      console.log('[discardSelected] hand after:', nextHand.map(c => `${c.rank}${c.suit[0]}`))
+      return {
+        hand: nextHand,
+        selected: [],
       }
     }),
 

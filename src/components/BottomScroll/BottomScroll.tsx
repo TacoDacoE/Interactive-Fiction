@@ -14,7 +14,7 @@ const BottomScroll = () => {
   const toggleSelect = useCardGame((state) => state.toggleSelect)
   const selected = useCardGame((state) => state.selected)
 
-  useInitialDraw(7)
+  useInitialDraw(13)
 
   const cardCount = hand.length
   const totalNaturalWidth = cardCount * CARD_WIDTH + (cardCount - 1) * STACK_GAP

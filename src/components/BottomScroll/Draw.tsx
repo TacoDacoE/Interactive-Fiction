@@ -9,8 +9,10 @@ const FLIGHT_MS = 350
 
 const Draw = () => {
   const drawCard = useCardGame(s => s.drawCard)
-  const pileRef = useRef<HTMLDivElement>(null)
-  const [flying, setFlying] = useState(false)
+  const hand = useCardGame(s => s.hand);
+  const pileRef = useRef<HTMLDivElement>(null);
+  const [flying, setFlying] = useState(false);
+  const isHandFull = hand.length >= 13;
 
   const handleDraw = () => {
     if (flying) return
@@ -64,7 +66,7 @@ const Draw = () => {
       <ButtonBase
         ref={pileRef}
         onClick={handleDraw}
-        disabled={flying}
+        disabled={flying || isHandFull}
         sx={{
           position: "relative",
           width: CARD_WIDTH,
@@ -119,6 +121,36 @@ const Draw = () => {
             Draw
           </Box>
         </Box>
+
+        {isHandFull && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 1,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <Box
+              component="span"
+              sx={{
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                color: "#fff",
+                textShadow: "0 1px 4px rgba(0,0,0,0.5)",
+                textAlign: "center",
+                lineHeight: 1.4,
+              }}
+            >
+              Full Hand
+            </Box>
+          </Box>
+        )}
       </ButtonBase>
     </>
   )
