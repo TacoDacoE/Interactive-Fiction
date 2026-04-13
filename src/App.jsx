@@ -4,8 +4,10 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import PlayingCardDeck from './components/Card/PlayingCardDeck'
 import MainPage from './pages/MainPage.tsx';
+import Dialogue from './pages/DialogueScene.tsx';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { usePhaseSequence } from './engine/useCardGameStore.ts'
+import { Dialog } from '@mui/material'
 
 const theme = createTheme({
   typography: {
@@ -48,7 +50,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <MainPage />
+      <Dialogue />      
     </ThemeProvider>
   )
 }

@@ -1,0 +1,44 @@
+[
+    {
+      "id": "story_1",
+      "trigger": {
+        "hearts": 10,
+        "diamonds": 10,
+        "spades": 10,
+        "clubs": 10
+      },
+      "pages": [
+        {
+          "characterName": "Grandmother",
+          "portraitUrl": "",
+          "dialogue": "A warmth stirs in your chest. The hearts have spoken — love and courage flow through these cards."
+        },
+        {
+          "characterName": "Elder Minh",
+          "portraitUrl": "",
+          "dialogue": "Let that fire carry you. Hearts do not lie."
+        }
+      ]
+    },
+    {
+      "id": "story_2",
+      "trigger": {
+        "hearts": 20,
+        "diamonds": 20,
+        "spades": 20,
+        "clubs": 20
+      },
+      "pages": [
+        {
+          "characterName": "Elder Minh",
+          "portraitUrl": "",
+          "dialogue": "A warmth stirs in your chest. The hearts have spoken — love and courage flow through these cards."
+        },
+        {
+          "characterName": "Elder Minh",
+          "portraitUrl": "",
+          "dialogue": "Let that fire carry you. Hearts do not lie."
+        }
+      ]
+    }
+]
