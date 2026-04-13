@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
+import { evaluateTienLenHand } from './EvaluateHand'
 
 // --- Types ---
 
@@ -19,6 +20,8 @@ type CardGameState = {
   played: Card[]
   phase: GamePhase
   score: number
+  suitScores: number[]
+  drawsRemaining: number
 
   // Actions
   drawCard: () => void
@@ -98,20 +101,14 @@ export const useCardGame = create<CardGameState>((set) => ({
   played: [],
   phase: 'playing',
   score: 0,
+  suitScores: [0, 0, 0, 0],
+  drawsRemaining: 13,
 
   drawCard: () =>
     set((state) => {
-      if (state.deck.length === 0) {
-        console.log('[drawCard] deck is empty, skipping')
-        return state
-      }
-      if (state.hand.length >= 13) {
-        console.log('Max hand length is 13, skipping')
-        return state
-      }
+      if (state.deck.length === 0 || state.hand.length >= 13 || state.drawsRemaining === 0) return state
       const [top, ...rest] = state.deck
-      console.log('[drawCard] drew:', top.rank, top.suit, '| deck remaining:', rest.length)
-      return { deck: rest, hand: [...state.hand, top] }
+      return { deck: rest, hand: [...state.hand, top], drawsRemaining: state.drawsRemaining - 1 }
     }),
 
   drawCards: (amount: number) =>
@@ -183,14 +180,17 @@ export const useCardGame = create<CardGameState>((set) => ({
 
   clearPlayed: () =>
     set((state) => {
-      const earned = scoreCards(state.played)
-      console.log('[clearPlayed] clearing:', state.played.map(c => `${c.rank}${c.suit[0]}`))
-      console.log('[clearPlayed] score earned:', earned, '| total score:', state.score + earned)
-      console.log('[clearPlayed] phase: clearing → playing')
+      const result = evaluateTienLenHand(state.played)
       return {
         played: [],
-        score: state.score + earned,
+        score: state.score + result.score,   // rankSum * mult
         phase: 'playing',
+        suitScores: [
+          state.suitScores[0] + result.spadesScore,
+          state.suitScores[1] + result.clubsScore,
+          state.suitScores[2] + result.diamondsScore,
+          state.suitScores[3] + result.heartsScore,
+        ],
       }
     }),
 
@@ -203,6 +203,8 @@ export const useCardGame = create<CardGameState>((set) => ({
       played: [],
       phase: 'playing',
       score: 0,
+      suitScores: [0, 0, 0, 0],
+      drawsRemaining: 13,
     })
   },
 

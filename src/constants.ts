@@ -1,0 +1,1 @@
+export const SCORE_TO_BEAT = 1000;

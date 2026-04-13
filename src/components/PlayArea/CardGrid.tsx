@@ -133,7 +133,7 @@ const CardGrid = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
               }}
             >
-              ×{result.mult} {result.name}
+              ×{result.mult} - {result.name}
             </Box>
           </Box>
         )}

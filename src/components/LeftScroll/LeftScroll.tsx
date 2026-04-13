@@ -2,8 +2,11 @@ import { Box, Stack, Typography } from "@mui/material"
 import BottomCorner from "../../assets/decorations/bottom_corner.svg";
 import TopDecor from "../../assets/decorations/scroll_decor_top.svg";
 import { HandScoreDisplay } from "./HandScoring";
+import { SCORE_TO_BEAT } from "../../constants";
+import { useCardGame } from "../../engine/useCardGameStore";
 
 const LeftScroll = ({ }) => {
+  const score = useCardGame(s => s.score);
   return (
     <Box px={1} sx={{
       position: "relative",
@@ -28,7 +31,10 @@ const LeftScroll = ({ }) => {
       <img style={{ position: "absolute", top: "-100px", width: "300px", transform: "translate(-48px,0)" }} src={TopDecor} alt="My Icon" />
       <Box sx={{ height: "100%", borderLeft: "2px solid", borderRight: "2px solid", borderColor: "#E4B588" }}>
         <Stack alignItems="center" py={1}>
-          <Typography variant="h3">Small Blind</Typography>
+          <Stack alignItems="center">
+            <Typography variant="h3">Score to beat</Typography>
+            <Typography variant="h1">{SCORE_TO_BEAT}</Typography>
+          </Stack>
           <HandScoreDisplay />
         </Stack>
       </Box>

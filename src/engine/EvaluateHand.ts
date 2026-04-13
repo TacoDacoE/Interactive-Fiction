@@ -3,9 +3,9 @@ import { Card } from './useCardGameStore'
 // --- Types ---
 
 export type TienLenHandName =
-  | 'Four Pairs Sequence'
-  | 'Three Pairs Sequence'
-  | 'Four of a Kind'
+  | '4 Pairs Seq'
+  | '3 Pairs Seq'
+  | '4 of a Kind'
   | 'Sequence'
   | 'Triple'
   | 'Pair'
@@ -26,9 +26,9 @@ export type TienLenHandResult = {
 // --- Constants ---
 
 const HAND_TABLE: Record<TienLenHandName, { mult: number }> = {
-  'Four Pairs Sequence': { mult: 8 },
-  'Three Pairs Sequence': { mult: 6 },
-  'Four of a Kind': { mult: 7 },
+  '4 Pairs Seq': { mult: 8 },
+  '3 Pairs Seq': { mult: 6 },
+  '4 of a Kind': { mult: 7 },
   'Sequence': { mult: 4 },
   'Triple': { mult: 3 },
   'Pair': { mult: 2 },
@@ -101,13 +101,13 @@ export function evaluateTienLenHand(cards: Card[]): TienLenHandResult {
   if (cards.length === 6 || cards.length === 8) {
     const pairsSeq = getPairsSequence(cards)
     if (pairsSeq) {
-      if (pairsSeq.pairCount === 4) return makeResult('Four Pairs Sequence', pairsSeq.sorted)
-      if (pairsSeq.pairCount === 3) return makeResult('Three Pairs Sequence', pairsSeq.sorted)
+      if (pairsSeq.pairCount === 4) return makeResult('4 Pairs Seq', pairsSeq.sorted)
+      if (pairsSeq.pairCount === 3) return makeResult('3 Pairs Seq', pairsSeq.sorted)
     }
   }
 
   if (cards.length === 4 && groups[0].length === 4) {
-    return makeResult('Four of a Kind', groups[0])
+    return makeResult('4 of a Kind', groups[0])
   }
 
   if (cards.length >= 3) {

@@ -1,4 +1,4 @@
-import { ButtonBase, Box } from "@mui/material"
+import { ButtonBase, Box, Stack, Typography } from "@mui/material"
 import { PlayingCardBack } from "../Card/PlayingCardDeck"
 import { useCardGame } from "../../engine/useCardGameStore"
 import { useRef, useState } from "react"
@@ -13,6 +13,7 @@ const Draw = () => {
   const pileRef = useRef<HTMLDivElement>(null);
   const [flying, setFlying] = useState(false);
   const isHandFull = hand.length >= 13;
+  const drawsRemaining = useCardGame(s => s.drawsRemaining);
 
   const handleDraw = () => {
     if (flying) return
@@ -46,9 +47,11 @@ const Draw = () => {
     }, FLIGHT_MS)
   }
 
+  const isOutOfDraws = drawsRemaining <= 0;
+
   return (
     <>
-      {flying && (
+      {(flying && !isOutOfDraws) && (
         <Box sx={{
           position: "fixed",
           top: 0,
@@ -63,95 +66,101 @@ const Draw = () => {
         </Box>
       )}
 
-      <ButtonBase
-        ref={pileRef}
-        onClick={handleDraw}
-        disabled={flying || isHandFull}
-        sx={{
-          position: "relative",
-          width: CARD_WIDTH,
-          height: CARD_HEIGHT,
-          borderRadius: 1,
-          transform: "translateY(-7px)",
-          "&:hover:not(:disabled) > .card-top": { transform: "translateY(-4px)" },
-        }}
-      >
-        <Box sx={{ position: "absolute", top: -4, left: 2, opacity: 1, pointerEvents: "none" }}>
-          <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
-        </Box>
-        <Box sx={{ position: "absolute", opacity: 1, pointerEvents: "none" }}>
-          <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
-        </Box>
-
-        <Box
-          className="card-top"
+      <Stack display="flex" alignItems="flex-end">
+        <ButtonBase
+          ref={pileRef}
+          onClick={handleDraw}
+          disabled={flying || isHandFull}
           sx={{
-            opacity: flying ? 0 : 1,
-            transition: "opacity 0.05s, transform 0.15s ease",
+            position: "relative",
+            width: CARD_WIDTH,
+            height: CARD_HEIGHT,
+            borderRadius: 1,
+            transform: "translateY(-7px)",
+            "&:hover:not(:disabled) > .card-top": { transform: "translateY(-4px)" },
           }}
         >
-          <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
-        </Box>
-
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-            opacity: flying ? 0 : 1,
-            transition: "opacity 0.05s",
-          }}
-        >
+          <Box sx={{ position: "absolute", top: -4, left: 2, opacity: 1, pointerEvents: "none" }}>
+            <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
+          </Box>
+          <Box sx={{ position: "absolute", opacity: 1, pointerEvents: "none" }}>
+            <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
+          </Box>
 
           <Box
-            component="span"
+            className="card-top"
             sx={{
-              pt: 10,
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              letterSpacing: "0.18em",
-              color: "rgba(255,255,255,0.92)",
-              textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-              lineHeight: 1,
+              opacity: flying ? 0 : 1,
+              transition: "opacity 0.05s, transform 0.15s ease",
             }}
           >
-            Draw
+            <PlayingCardBack width={CARD_WIDTH} height={CARD_HEIGHT} />
           </Box>
-        </Box>
 
-        {isHandFull && (
           <Box
             sx={{
               position: "absolute",
               inset: 0,
-              borderRadius: 1,
-              backgroundColor: "rgba(0,0,0,0.5)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               pointerEvents: "none",
+              opacity: flying ? 0 : 1,
+              transition: "opacity 0.05s",
             }}
           >
+
             <Box
               component="span"
               sx={{
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                color: "#fff",
+                pt: 10,
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                color: "rgba(255,255,255,0.92)",
                 textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                textAlign: "center",
-                lineHeight: 1.4,
+                lineHeight: 1,
               }}
             >
-              Full Hand
+              Draw
             </Box>
           </Box>
-        )}
-      </ButtonBase>
+
+          {(isHandFull || isOutOfDraws) && (
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                pointerEvents: "none",
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                  color: "#fff",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.5)",
+                  textAlign: "center",
+                  lineHeight: 1.4,
+                  px: 0.5,
+                }}
+              >
+                {isOutOfDraws ? "No Draws Left" : "Full Hand"}
+              </Box>
+            </Box>
+          )}
+        </ButtonBase>
+        <Typography sx={{ pr: 0.5, color: "#aaa" }}>
+          {drawsRemaining}/13
+        </Typography>
+      </Stack>
     </>
   )
 }
