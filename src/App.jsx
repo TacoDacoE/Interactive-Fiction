@@ -3,9 +3,10 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import PlayingCardDeck from './components/Card/PlayingCardDeck'
+import DisplayModal from './components/Modal/DisplayModal.tsx'
 import MainPage from './pages/MainPage.tsx';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { usePhaseSequence } from './engine/useCardGameStore.ts'
+import { usePhaseSequence, useCardGame } from './engine/useCardGameStore.ts'
 
 const theme = createTheme({
   typography: {
@@ -49,6 +50,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <MainPage />
+      <DisplayModal />
     </ThemeProvider>
   )
 }

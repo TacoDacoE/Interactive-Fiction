@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
 import { evaluateTienLenHand } from './EvaluateHand'
+import { PLAY_HAND_LIMIT, SCORE_TO_BEAT } from '../constants'
 
 // --- Types ---
 
@@ -13,6 +14,8 @@ export type Card = {
 
 export type GamePhase = 'playing' | 'resolving' | 'clearing'
 
+export type GameResult = 'win' | 'loss' | null
+
 type CardGameState = {
   deck: Card[]
   hand: Card[]
@@ -22,6 +25,9 @@ type CardGameState = {
   score: number
   suitScores: number[]
   drawsRemaining: number
+  playsRemaining: number
+  gameOver: boolean
+  gameResult: GameResult
 
   // Actions
   drawCard: () => void
@@ -92,6 +98,25 @@ function sortByRankFn(cards: Card[]): Card[] {
   })
 }
 
+function resolveGameOver(
+  playsRemaining: number,
+  drawsRemaining: number,
+  handSize: number,
+  score: number
+): { gameOver: boolean; gameResult: GameResult } {
+  if (playsRemaining > 0) return { gameOver: false, gameResult: null }
+  if (playsRemaining === 0) return {
+    gameOver: true,
+    gameResult: score >= SCORE_TO_BEAT ? 'win' : 'loss',
+  }
+  const cantContinue = handSize === 0 && drawsRemaining === 0
+  if (!cantContinue) return { gameOver: false, gameResult: null }
+  return {
+    gameOver: true,
+    gameResult: score >= SCORE_TO_BEAT ? 'win' : 'loss',
+  }
+}
+
 // --- Store ---
 
 export const useCardGame = create<CardGameState>((set) => ({
@@ -103,9 +128,13 @@ export const useCardGame = create<CardGameState>((set) => ({
   score: 0,
   suitScores: [0, 0, 0, 0],
   drawsRemaining: 13,
+  playsRemaining: PLAY_HAND_LIMIT,
+  gameOver: false,
+  gameResult: null,
 
   drawCard: () =>
     set((state) => {
+      if (state.gameOver) return state
       if (state.deck.length === 0 || state.hand.length >= 13 || state.drawsRemaining === 0) return state
       const [top, ...rest] = state.deck
       return { deck: rest, hand: [...state.hand, top], drawsRemaining: state.drawsRemaining - 1 }
@@ -113,6 +142,7 @@ export const useCardGame = create<CardGameState>((set) => ({
 
   drawCards: (amount: number) =>
     set((state) => {
+      if (state.gameOver) return state
       const toDraw = Math.min(amount, state.deck.length)
       const drawn = state.deck.slice(0, toDraw)
       const rest = state.deck.slice(toDraw)
@@ -122,8 +152,8 @@ export const useCardGame = create<CardGameState>((set) => ({
 
   toggleSelect: (id) =>
     set((state) => {
-      if (state.phase !== 'playing') {
-        console.log('[toggleSelect] blocked — phase is', state.phase)
+      if (state.phase !== 'playing' || state.gameOver) {
+        console.log('[toggleSelect] blocked — phase is', state.phase, '| gameOver:', state.gameOver)
         return state
       }
       const isDeselecting = state.selected.includes(id)
@@ -136,26 +166,33 @@ export const useCardGame = create<CardGameState>((set) => ({
 
   playSelected: () =>
     set((state) => {
-      if (state.phase !== 'playing') {
+      if (state.phase !== 'playing' || state.gameOver) {
         return state
       }
       if (state.selected.length === 0) {
         return state
       }
+      if (state.playsRemaining <= 0) {
+        console.log('[playSelected] blocked — no plays remaining')
+        return state
+      }
       const toPlay = state.hand.filter((c) => state.selected.includes(c.id))
       const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
+      const nextPlaysRemaining = state.playsRemaining - 1
+      console.log('[playSelected] plays remaining after this:', nextPlaysRemaining)
       return {
         hand: nextHand,
-        played: sortByRankFn(sortBySuitFn(toPlay)),   // ← replace, not append (per the bug fix)
+        played: sortByRankFn(sortBySuitFn(toPlay)),
         selected: [],
         phase: 'resolving',
+        playsRemaining: nextPlaysRemaining,
       }
     }),
 
   discardSelected: () =>
     set((state) => {
-      if (state.phase !== 'playing') {
-        console.log('[discardSelected] blocked — phase is', state.phase)
+      if (state.phase !== 'playing' || state.gameOver) {
+        console.log('[discardSelected] blocked — phase is', state.phase, '| gameOver:', state.gameOver)
         return state
       }
       if (state.selected.length === 0) {
@@ -166,9 +203,19 @@ export const useCardGame = create<CardGameState>((set) => ({
       const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
       console.log('[discardSelected] discarding:', toDiscard.map(c => `${c.rank}${c.suit[0]}`))
       console.log('[discardSelected] hand after:', nextHand.map(c => `${c.rank}${c.suit[0]}`))
+
+      const { gameOver, gameResult } = resolveGameOver(
+        state.playsRemaining,
+        state.drawsRemaining,
+        nextHand.length,
+        state.score
+      )
+
       return {
         hand: nextHand,
         selected: [],
+        gameOver,
+        gameResult,
       }
     }),
 
@@ -181,9 +228,22 @@ export const useCardGame = create<CardGameState>((set) => ({
   clearPlayed: () =>
     set((state) => {
       const result = evaluateTienLenHand(state.played)
+      const newScore = state.score + result.score
+
+      const { gameOver, gameResult } = resolveGameOver(
+        state.playsRemaining,
+        state.drawsRemaining,
+        state.hand.length,
+        newScore
+      )
+
+      if (gameOver) {
+        console.log(`[clearPlayed] game over — result: ${gameResult} | score: ${newScore} | target: ${SCORE_TO_BEAT}`)
+      }
+
       return {
         played: [],
-        score: state.score + result.score,   // rankSum * mult
+        score: newScore,
         phase: 'playing',
         suitScores: [
           state.suitScores[0] + result.spadesScore,
@@ -191,6 +251,8 @@ export const useCardGame = create<CardGameState>((set) => ({
           state.suitScores[2] + result.diamondsScore,
           state.suitScores[3] + result.heartsScore,
         ],
+        gameOver,
+        gameResult,
       }
     }),
 
@@ -205,6 +267,9 @@ export const useCardGame = create<CardGameState>((set) => ({
       score: 0,
       suitScores: [0, 0, 0, 0],
       drawsRemaining: 13,
+      playsRemaining: PLAY_HAND_LIMIT,
+      gameOver: false,
+      gameResult: null,
     })
   },
 
