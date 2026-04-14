@@ -1,4 +1,4 @@
-import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import BottomScroll from "../components/BottomScroll/BottomScroll";
 import LeftScroll from "../components/LeftScroll/LeftScroll";
@@ -8,6 +8,10 @@ import themeSong from "../assets/sounds/background_music.mp3";
 import { useEffect, useState } from "react";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import ActionBar from "../components/BottomScroll/ActionBar";
+import { PlayingCardBack } from "../components/Card/PlayingCardDeck.jsx";
+import CardGrid from "../components/PlayArea/CardGrid.js";
+import Draw from "../components/BottomScroll/Draw";
 
 const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
@@ -86,10 +90,10 @@ export default function MainPage({ title = "Page Title" }) {
                     <VolumeOffIcon fontSize="medium" sx={{ color: "grey.100" }} /> :
                     <VolumeUpIcon fontSize="medium" sx={{ color: "grey.100" }} />
                   }
-
                 </IconButton>
               </Tooltip>
             </Stack>
+            <CardGrid />
           </Box>
           <Box sx={{
             height: "40%",
@@ -100,17 +104,21 @@ export default function MainPage({ title = "Page Title" }) {
             display: "flex",
             justifyContent: "flex-end"
           }}>
-            <Box pl={8} pr={4} pt={4} pb={14}
+            <Stack pl={8} pr={4} pt={4} pb={6}
               sx={{
                 flex: 1,
-                display: "flex",
                 bgcolor: layoutColors ? "grey.500" : "transparent",
-                minHeight: 0
+                minHeight: 0,
               }}
             >
               <BottomScroll />
+              <Box sx={{ marginLeft: "auto" }}>
+                <ActionBar />
+              </Box>
+            </Stack>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "20%", height: "100%", bgcolor: layoutColors ? "blue" : "transparent", maxWidth: 400, minWidth: 200 }}>
+              <Draw />
             </Box>
-            <Box sx={{ width: "20%", height: "100%", bgcolor: layoutColors ? "blue" : "transparent", maxWidth: 400, minWidth: 200 }}></Box>
           </Box>
         </Box>
       </WavyBackgroundBox>

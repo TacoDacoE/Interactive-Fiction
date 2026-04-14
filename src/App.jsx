@@ -3,32 +3,55 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import PlayingCardDeck from './components/Card/PlayingCardDeck'
+import DisplayModal from './components/Modal/DisplayModal.tsx'
 import MainPage from './pages/MainPage.tsx';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { usePhaseSequence, useCardGame } from './engine/useCardGameStore.ts'
+
+const theme = createTheme({
+  typography: {
+    h1: { fontFamily: '"Cinzel", serif', fontSize: '2rem' },
+    h2: { fontFamily: '"Cinzel", serif', fontSize: '1.75rem' },
+    h3: { fontFamily: '"Cinzel", serif', fontSize: '1.5rem' },
+    h4: { fontFamily: '"Cinzel", serif', fontSize: '1.25rem' },
+    h5: { fontFamily: '"Cinzel", serif', fontSize: '1.1rem' },
+    h6: { fontFamily: '"Cinzel", serif', fontSize: '1rem' },
+  },
+  components: {
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: 'none',
+            boxShadow: 'none',
+          },
+          '&:focus': {
+            outline: 'none',
+          },
+          '&.Mui-disabled': {
+            color: '#999 !important',
+          },
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none', // Prevents all-caps
+        },
+      },
+    },
+  },
+});
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [showDeck, setShowDeck] = useState(false)
-
-  if (showDeck) return <PlayingCardDeck />
+  usePhaseSequence(2000, 200);
 
   return (
-    <>
-      <MainPage/>
-      {/* <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount(c => c + 1)}>count is {count}</button>
-        <button onClick={() => setShowDeck(true)}>🃏 View Card Deck</button>
-      </div> */}
-      
-    </>
+    <ThemeProvider theme={theme}>
+      <MainPage />
+      <DisplayModal />
+    </ThemeProvider>
   )
 }
 

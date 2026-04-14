@@ -2,27 +2,27 @@ import { useState } from "react";
 
 // ─── Design Tokens ───────────────────────────────────────────────
 const SUITS = {
-  spades:   { symbol: "♠", zh: "黑", color: "#1a1a2e", accent: "#2d4a3e" },
-  hearts:   { symbol: "♥", zh: "心", color: "#8b1a1a", accent: "#c0392b" },
+  spades: { symbol: "♠", zh: "黑", color: "#1a1a2e", accent: "#2d4a3e" },
+  hearts: { symbol: "♥", zh: "心", color: "#8b1a1a", accent: "#c0392b" },
   diamonds: { symbol: "♦", zh: "方", color: "#8b1a1a", accent: "#c0392b" },
-  clubs:    { symbol: "♣", zh: "梅", color: "#1a1a2e", accent: "#2d4a3e" },
+  clubs: { symbol: "♣", zh: "梅", color: "#1a1a2e", accent: "#2d4a3e" },
 };
 
-const RANKS = [
-  { value: "A",  zh: "A",  num: 1  },
-  { value: "2",  zh: "二", num: 2  },
-  { value: "3",  zh: "三", num: 3  },
-  { value: "4",  zh: "四", num: 4  },
-  { value: "5",  zh: "五", num: 5  },
-  { value: "6",  zh: "六", num: 6  },
-  { value: "7",  zh: "七", num: 7  },
-  { value: "8",  zh: "八", num: 8  },
-  { value: "9",  zh: "九", num: 9  },
-  { value: "10", zh: "十", num: 10 },
-  { value: "J",  zh: "將", num: 11 },
-  { value: "Q",  zh: "皇", num: 12 },
-  { value: "K",  zh: "王", num: 13 },
-];
+export const RANKS = {
+  'A': { value: "A", zh: "A", num: 1 },
+  '2': { value: "2", zh: "二", num: 2 },
+  '3': { value: "3", zh: "三", num: 3 },
+  '4': { value: "4", zh: "四", num: 4 },
+  '5': { value: "5", zh: "五", num: 5 },
+  '6': { value: "6", zh: "六", num: 6 },
+  '7': { value: "7", zh: "七", num: 7 },
+  '8': { value: "8", zh: "八", num: 8 },
+  '9': { value: "9", zh: "九", num: 9 },
+  '10': { value: "10", zh: "十", num: 10 },
+  'J': { value: "J", zh: "將", num: 11 },
+  'Q': { value: "Q", zh: "皇", num: 12 },
+  'K': { value: "K", zh: "王", num: 13 },
+};
 
 // ─── Border / Corner Motif ────────────────────────────────────────
 function MahjongBorder({ color }) {
@@ -32,7 +32,7 @@ function MahjongBorder({ color }) {
         fill="none" stroke={color} strokeWidth="1.5" opacity="0.35" />
       <rect x="6" y="6" width="88" height="128" rx="4" ry="4"
         fill="none" stroke={color} strokeWidth="0.6" opacity="0.2" />
-      {[[50,5],[50,135]].map(([cx,cy], i) => (
+      {[[50, 5], [50, 135]].map(([cx, cy], i) => (
         <g key={i} transform={`translate(${cx},${cy})`}>
           <line x1="-8" y1="0" x2="8" y2="0" stroke={color} strokeWidth="0.8" opacity="0.25" />
           <circle cx="0" cy="0" r="1.5" fill={color} opacity="0.3" />
@@ -66,7 +66,7 @@ function TileBackground() {
 }
 
 // ─── Card Back ────────────────────────────────────────────────────
-function CardBack() {
+export function CardBack() {
   return (
     <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg"
       style={{ width: "100%", height: "100%", display: "block" }}>
@@ -90,11 +90,11 @@ function CardBack() {
         <circle cx="0" cy="0" r="16" fill="none" stroke="#c8a951" strokeWidth="0.5" opacity="0.4" />
         <text x="0" y="5" textAnchor="middle" fontSize="18"
           fontFamily="serif" fill="#c8a951" opacity="0.9">牌</text>
-        {Array.from({length: 8}, (_,i) => {
+        {Array.from({ length: 8 }, (_, i) => {
           const a = (i * 45 * Math.PI) / 180;
           return <line key={i}
-            x1={Math.cos(a)*18} y1={Math.sin(a)*18}
-            x2={Math.cos(a)*22} y2={Math.sin(a)*22}
+            x1={Math.cos(a) * 18} y1={Math.sin(a) * 18}
+            x2={Math.cos(a) * 22} y2={Math.sin(a) * 22}
             stroke="#c8a951" strokeWidth="0.8" opacity="0.5" />;
         })}
       </g>
@@ -119,16 +119,16 @@ function Pip({ suit, size = 12, x = 0, y = 0 }) {
 function getPipPositions(num) {
   const cx = 50;
   const patterns = {
-    1:  [[cx, 70]],
-    2:  [[cx,40],[cx,100]],
-    3:  [[cx,35],[cx,70],[cx,105]],
-    4:  [[35,40],[65,40],[35,100],[65,100]],
-    5:  [[35,40],[65,40],[cx,70],[35,100],[65,100]],
-    6:  [[35,38],[65,38],[35,70],[65,70],[35,102],[65,102]],
-    7:  [[35,35],[65,35],[cx,55],[35,70],[65,70],[35,100],[65,100]],
-    8:  [[35,35],[65,35],[35,58],[65,58],[35,82],[65,82],[35,105],[65,105]],
-    9:  [[35,33],[65,33],[35,53],[65,53],[cx,70],[35,87],[65,87],[35,107],[65,107]],
-    10: [[35,32],[65,32],[35,50],[65,50],[35,68],[65,68],[35,86],[65,86],[35,104],[65,104]],
+    1: [[cx, 70]],
+    2: [[cx, 40], [cx, 100]],
+    3: [[cx, 35], [cx, 70], [cx, 105]],
+    4: [[35, 40], [65, 40], [35, 100], [65, 100]],
+    5: [[35, 40], [65, 40], [cx, 70], [35, 100], [65, 100]],
+    6: [[35, 38], [65, 38], [35, 70], [65, 70], [35, 102], [65, 102]],
+    7: [[35, 35], [65, 35], [cx, 55], [35, 70], [65, 70], [35, 100], [65, 100]],
+    8: [[35, 35], [65, 35], [35, 58], [65, 58], [35, 82], [65, 82], [35, 105], [65, 105]],
+    9: [[35, 33], [65, 33], [35, 53], [65, 53], [cx, 70], [35, 87], [65, 87], [35, 107], [65, 107]],
+    10: [[35, 32], [65, 32], [35, 50], [65, 50], [35, 68], [65, 68], [35, 86], [65, 86], [35, 104], [65, 104]],
   };
   return patterns[num] || patterns[1];
 }
@@ -175,7 +175,7 @@ function AceCenter({ suit }) {
 // All internal artwork lives in a fixed 100×140 viewBox, so the SVG
 // viewport scaling takes care of everything automatically — no math needed
 // inside the card components themselves.
-function PlayingCard({
+export default function PlayingCard({
   rank,
   suit,
   faceDown = false,
@@ -185,8 +185,8 @@ function PlayingCard({
   height = 112,
 }) {
   const { color, zh } = SUITS[suit];
-  const isFace = ["J","Q","K"].includes(rank.value);
-  const isAce  = rank.value === "A";
+  const isFace = ["J", "Q", "K"].includes(rank.value);
+  const isAce = rank.value === "A";
 
   // Lift scales proportionally with card height
   const liftPx = Math.round(height * 0.107);
@@ -214,30 +214,30 @@ function PlayingCard({
 
             {/* top-left rank + suit — block starts at y=10, lines spaced 11px */}
             <g transform="translate(14, 10)">
-              <text x="0" y="0"  fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
+              <text x="0" y="0" fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
                 dominantBaseline="hanging" textAnchor="middle">{rank.value}</text>
-              <text x="0" y="16" fontSize="9"  fontFamily="serif" fill={color} opacity="0.7"
+              <text x="0" y="16" fontSize="9" fontFamily="serif" fill={color} opacity="0.7"
                 dominantBaseline="hanging" textAnchor="middle">{zh}</text>
-              <text x="0" y="25" fontSize="9"  fontFamily="serif" fill={color}
+              <text x="0" y="25" fontSize="9" fontFamily="serif" fill={color}
                 dominantBaseline="hanging" textAnchor="middle">{SUITS[suit].symbol}</text>
             </g>
 
             {/* bottom-right (rotated) */}
             <g transform="rotate(180,50,70)">
               <g transform="translate(14, 10)">
-                <text x="0" y="0"  fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
+                <text x="0" y="0" fontSize="16" fontFamily="serif" fill={color} fontWeight="bold"
                   dominantBaseline="hanging" textAnchor="middle">{rank.value}</text>
-                <text x="0" y="16" fontSize="9"  fontFamily="serif" fill={color} opacity="0.7"
+                <text x="0" y="16" fontSize="9" fontFamily="serif" fill={color} opacity="0.7"
                   dominantBaseline="hanging" textAnchor="middle">{zh}</text>
-                <text x="0" y="25" fontSize="9"  fontFamily="serif" fill={color}
+                <text x="0" y="25" fontSize="9" fontFamily="serif" fill={color}
                   dominantBaseline="hanging" textAnchor="middle">{SUITS[suit].symbol}</text>
               </g>
             </g>
-            
+
             {/* center */}
             {isAce && <AceCenter suit={suit} />}
             {isFace && <FaceIllustration rank={rank} suit={suit} />}
-            {!isAce && !isFace && getPipPositions(rank.num).map(([px,py], i) => (
+            {!isAce && !isFace && getPipPositions(rank.num).map(([px, py], i) => (
               <Pip key={i} suit={suit} size={24} x={px} y={py} />
             ))}
 
@@ -252,24 +252,39 @@ function PlayingCard({
   );
 }
 
-// ─── Full Deck Preview App ────────────────────────────────────────
-const FULL_DECK = Object.keys(SUITS).flatMap(suit =>
-  RANKS.map(rank => ({ rank, suit }))
-);
+export function PlayingCardBack({ width = 80, height = 112, }) {
+  return (
+    <div style={{
+      width,
+      height,
+      flexShrink: 0,
+    }}>
+      <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", height: "100%", display: "block" }}>
+        <CardBack />
+      </svg>
+    </div>
+  )
+}
+
+// // ─── Full Deck Preview App ────────────────────────────────────────
+// const FULL_DECK = Object.keys(SUITS).flatMap(suit =>
+//   RANKS.map(rank => ({ rank, suit }))
+// );
 
 const SIZE_PRESETS = [
-  { label: "XS", width: 48,  height: 67  },
-  { label: "S",  width: 64,  height: 90  },
-  { label: "M",  width: 80,  height: 112 },
-  { label: "L",  width: 110, height: 154 },
+  { label: "XS", width: 48, height: 67 },
+  { label: "S", width: 64, height: 90 },
+  { label: "M", width: 80, height: 112 },
+  { label: "L", width: 110, height: 154 },
   { label: "XL", width: 150, height: 210 },
 ];
 
-export default function DeckPreview() {
-  const [selected, setSelected]     = useState(new Set());
+export function DeckPreview() {
+  const [selected, setSelected] = useState(new Set());
   const [filterSuit, setFilterSuit] = useState("all");
-  const [showBack, setShowBack]     = useState(false);
-  const [sizeIdx, setSizeIdx]       = useState(2); // default "M"
+  const [showBack, setShowBack] = useState(false);
+  const [sizeIdx, setSizeIdx] = useState(2); // default "M"
 
   const { width, height } = SIZE_PRESETS[sizeIdx];
 
@@ -292,12 +307,16 @@ export default function DeckPreview() {
     }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ color: "#c8a951", fontSize: 11, letterSpacing: 6,
-          textTransform: "uppercase", marginBottom: 8, opacity: 0.7 }}>
+        <div style={{
+          color: "#c8a951", fontSize: 11, letterSpacing: 6,
+          textTransform: "uppercase", marginBottom: 8, opacity: 0.7
+        }}>
           Interactive Fiction
         </div>
-        <h1 style={{ color: "#f5f0e8", fontSize: 28, margin: 0,
-          fontWeight: "normal", letterSpacing: 2 }}>
+        <h1 style={{
+          color: "#f5f0e8", fontSize: 28, margin: 0,
+          fontWeight: "normal", letterSpacing: 2
+        }}>
           麻將風格牌組
         </h1>
         <p style={{ color: "#c8b89a", fontSize: 13, marginTop: 8, opacity: 0.6 }}>
@@ -306,8 +325,10 @@ export default function DeckPreview() {
       </div>
 
       {/* Controls */}
-      <div style={{ display: "flex", gap: 12, justifyContent: "center",
-        flexWrap: "wrap", marginBottom: 16 }}>
+      <div style={{
+        display: "flex", gap: 12, justifyContent: "center",
+        flexWrap: "wrap", marginBottom: 16
+      }}>
         {["all", ...Object.keys(SUITS)].map(s => (
           <button key={s} onClick={() => setFilterSuit(s)} style={{
             padding: "6px 18px", borderRadius: 4, border: "1px solid",
@@ -340,8 +361,10 @@ export default function DeckPreview() {
       </div>
 
       {/* Size picker */}
-      <div style={{ display: "flex", gap: 8, justifyContent: "center",
-        marginBottom: 28, alignItems: "center" }}>
+      <div style={{
+        display: "flex", gap: 8, justifyContent: "center",
+        marginBottom: 28, alignItems: "center"
+      }}>
         <span style={{ color: "#c8b89a", fontSize: 12, opacity: 0.6, letterSpacing: 1 }}>SIZE</span>
         {SIZE_PRESETS.map((p, i) => (
           <button key={p.label} onClick={() => setSizeIdx(i)} style={{
@@ -361,8 +384,10 @@ export default function DeckPreview() {
 
       {/* Selected info */}
       {selected.size > 0 && (
-        <div style={{ textAlign: "center", marginBottom: 20,
-          color: "#c8a951", fontSize: 13, letterSpacing: 1 }}>
+        <div style={{
+          textAlign: "center", marginBottom: 20,
+          color: "#c8a951", fontSize: 13, letterSpacing: 1
+        }}>
           Selected: {[...selected].join("  ·  ")}
         </div>
       )}
@@ -391,8 +416,10 @@ export default function DeckPreview() {
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: "center", marginTop: 40,
-        color: "#2d4a3e", fontSize: 11, letterSpacing: 3 }}>
+      <div style={{
+        textAlign: "center", marginTop: 40,
+        color: "#2d4a3e", fontSize: 11, letterSpacing: 3
+      }}>
         ◆ CLICK CARDS TO SELECT · 點擊選牌 ◆
       </div>
     </div>
