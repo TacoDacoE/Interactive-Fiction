@@ -17,18 +17,48 @@ const dialogueTriggers: DialogueTrigger[] = [
   {
     id: 'insert descriptor about scenario',
     suit: 'hearts',
-    scoreRange: [0, 30],
-    pages: [
-
-    ],
+    scoreRange: [0, 1000],
+    pages:
+      [
+        {
+          name: 'Alice',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Alice was a brave adventurer who...',
+        },
+        {
+          name: 'Bob',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Bob was a cunning merchant who...',
+        },
+        {
+          name: 'Carol',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Carol was a wise scholar who...',
+        },
+      ],
   },
   {
     id: 'insert descriptor about scenario',
-    suit: 'hearts',
-    scoreRange: [31, 100],
-    pages: [
-
-    ],
+    suit: 'spades',
+    scoreRange: [31, 1000],
+    pages:
+      [
+        {
+          name: 'Alice',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Alice was a brave adventurer who...',
+        },
+        {
+          name: 'Bob',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Bob was a cunning merchant who...',
+        },
+        {
+          name: 'Carol',
+          imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+          content: 'Carol was a wise scholar who...',
+        },
+      ],
   },
 ]
 
