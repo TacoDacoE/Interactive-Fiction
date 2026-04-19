@@ -280,148 +280,148 @@ const SIZE_PRESETS = [
   { label: "XL", width: 150, height: 210 },
 ];
 
-export function DeckPreview() {
-  const [selected, setSelected] = useState(new Set());
-  const [filterSuit, setFilterSuit] = useState("all");
-  const [showBack, setShowBack] = useState(false);
-  const [sizeIdx, setSizeIdx] = useState(2); // default "M"
+// export function DeckPreview() {
+//   const [selected, setSelected] = useState(new Set());
+//   const [filterSuit, setFilterSuit] = useState("all");
+//   const [showBack, setShowBack] = useState(false);
+//   const [sizeIdx, setSizeIdx] = useState(2); // default "M"
 
-  const { width, height } = SIZE_PRESETS[sizeIdx];
+//   const { width, height } = SIZE_PRESETS[sizeIdx];
 
-  const toggle = (key) => setSelected(prev => {
-    const next = new Set(prev);
-    next.has(key) ? next.delete(key) : next.add(key);
-    return next;
-  });
+//   const toggle = (key) => setSelected(prev => {
+//     const next = new Set(prev);
+//     next.has(key) ? next.delete(key) : next.add(key);
+//     return next;
+//   });
 
-  const displayed = filterSuit === "all"
-    ? FULL_DECK
-    : FULL_DECK.filter(c => c.suit === filterSuit);
+//   const displayed = filterSuit === "all"
+//     ? FULL_DECK
+//     : FULL_DECK.filter(c => c.suit === filterSuit);
 
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #0d1f16 0%, #1a3a2a 50%, #0d2020 100%)",
-      fontFamily: "serif",
-      padding: "32px 24px",
-    }}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{
-          color: "#c8a951", fontSize: 11, letterSpacing: 6,
-          textTransform: "uppercase", marginBottom: 8, opacity: 0.7
-        }}>
-          Interactive Fiction
-        </div>
-        <h1 style={{
-          color: "#f5f0e8", fontSize: 28, margin: 0,
-          fontWeight: "normal", letterSpacing: 2
-        }}>
-          麻將風格牌組
-        </h1>
-        <p style={{ color: "#c8b89a", fontSize: 13, marginTop: 8, opacity: 0.6 }}>
-          Mahjong-Inspired Playing Card Deck — 52 Cards
-        </p>
-      </div>
+//   return (
+//     <div style={{
+//       minHeight: "100vh",
+//       background: "linear-gradient(135deg, #0d1f16 0%, #1a3a2a 50%, #0d2020 100%)",
+//       fontFamily: "serif",
+//       padding: "32px 24px",
+//     }}>
+//       {/* Header */}
+//       <div style={{ textAlign: "center", marginBottom: 32 }}>
+//         <div style={{
+//           color: "#c8a951", fontSize: 11, letterSpacing: 6,
+//           textTransform: "uppercase", marginBottom: 8, opacity: 0.7
+//         }}>
+//           Interactive Fiction
+//         </div>
+//         <h1 style={{
+//           color: "#f5f0e8", fontSize: 28, margin: 0,
+//           fontWeight: "normal", letterSpacing: 2
+//         }}>
+//           麻將風格牌組
+//         </h1>
+//         <p style={{ color: "#c8b89a", fontSize: 13, marginTop: 8, opacity: 0.6 }}>
+//           Mahjong-Inspired Playing Card Deck — 52 Cards
+//         </p>
+//       </div>
 
-      {/* Controls */}
-      <div style={{
-        display: "flex", gap: 12, justifyContent: "center",
-        flexWrap: "wrap", marginBottom: 16
-      }}>
-        {["all", ...Object.keys(SUITS)].map(s => (
-          <button key={s} onClick={() => setFilterSuit(s)} style={{
-            padding: "6px 18px", borderRadius: 4, border: "1px solid",
-            borderColor: filterSuit === s ? "#c8a951" : "#2d4a3e",
-            background: filterSuit === s ? "#c8a951" : "transparent",
-            color: filterSuit === s ? "#0d1f16" : "#c8b89a",
-            cursor: "pointer", fontSize: 13, fontFamily: "serif",
-            letterSpacing: 1, transition: "all 0.15s",
-          }}>
-            {s === "all" ? "全部 All" : `${SUITS[s].symbol} ${SUITS[s].zh}`}
-          </button>
-        ))}
-        <button onClick={() => setShowBack(b => !b)} style={{
-          padding: "6px 18px", borderRadius: 4, border: "1px solid #2d4a3e",
-          background: showBack ? "#2d4a3e" : "transparent",
-          color: "#c8b89a", cursor: "pointer", fontSize: 13,
-          fontFamily: "serif", letterSpacing: 1,
-        }}>
-          {showBack ? "Show Face" : "Show Back"}
-        </button>
-        {selected.size > 0 && (
-          <button onClick={() => setSelected(new Set())} style={{
-            padding: "6px 18px", borderRadius: 4, border: "1px solid #8b1a1a",
-            background: "transparent", color: "#c0392b", cursor: "pointer",
-            fontSize: 13, fontFamily: "serif",
-          }}>
-            Clear ({selected.size})
-          </button>
-        )}
-      </div>
+//       {/* Controls */}
+//       <div style={{
+//         display: "flex", gap: 12, justifyContent: "center",
+//         flexWrap: "wrap", marginBottom: 16
+//       }}>
+//         {["all", ...Object.keys(SUITS)].map(s => (
+//           <button key={s} onClick={() => setFilterSuit(s)} style={{
+//             padding: "6px 18px", borderRadius: 4, border: "1px solid",
+//             borderColor: filterSuit === s ? "#c8a951" : "#2d4a3e",
+//             background: filterSuit === s ? "#c8a951" : "transparent",
+//             color: filterSuit === s ? "#0d1f16" : "#c8b89a",
+//             cursor: "pointer", fontSize: 13, fontFamily: "serif",
+//             letterSpacing: 1, transition: "all 0.15s",
+//           }}>
+//             {s === "all" ? "全部 All" : `${SUITS[s].symbol} ${SUITS[s].zh}`}
+//           </button>
+//         ))}
+//         <button onClick={() => setShowBack(b => !b)} style={{
+//           padding: "6px 18px", borderRadius: 4, border: "1px solid #2d4a3e",
+//           background: showBack ? "#2d4a3e" : "transparent",
+//           color: "#c8b89a", cursor: "pointer", fontSize: 13,
+//           fontFamily: "serif", letterSpacing: 1,
+//         }}>
+//           {showBack ? "Show Face" : "Show Back"}
+//         </button>
+//         {selected.size > 0 && (
+//           <button onClick={() => setSelected(new Set())} style={{
+//             padding: "6px 18px", borderRadius: 4, border: "1px solid #8b1a1a",
+//             background: "transparent", color: "#c0392b", cursor: "pointer",
+//             fontSize: 13, fontFamily: "serif",
+//           }}>
+//             Clear ({selected.size})
+//           </button>
+//         )}
+//       </div>
 
-      {/* Size picker */}
-      <div style={{
-        display: "flex", gap: 8, justifyContent: "center",
-        marginBottom: 28, alignItems: "center"
-      }}>
-        <span style={{ color: "#c8b89a", fontSize: 12, opacity: 0.6, letterSpacing: 1 }}>SIZE</span>
-        {SIZE_PRESETS.map((p, i) => (
-          <button key={p.label} onClick={() => setSizeIdx(i)} style={{
-            width: 36, padding: "4px 0", borderRadius: 4, border: "1px solid",
-            borderColor: sizeIdx === i ? "#c8a951" : "#2d4a3e",
-            background: sizeIdx === i ? "#c8a951" : "transparent",
-            color: sizeIdx === i ? "#0d1f16" : "#c8b89a",
-            cursor: "pointer", fontSize: 12, fontFamily: "serif", letterSpacing: 1,
-          }}>
-            {p.label}
-          </button>
-        ))}
-        <span style={{ color: "#c8b89a", fontSize: 11, opacity: 0.4, marginLeft: 4 }}>
-          {width}×{height}px
-        </span>
-      </div>
+//       {/* Size picker */}
+//       <div style={{
+//         display: "flex", gap: 8, justifyContent: "center",
+//         marginBottom: 28, alignItems: "center"
+//       }}>
+//         <span style={{ color: "#c8b89a", fontSize: 12, opacity: 0.6, letterSpacing: 1 }}>SIZE</span>
+//         {SIZE_PRESETS.map((p, i) => (
+//           <button key={p.label} onClick={() => setSizeIdx(i)} style={{
+//             width: 36, padding: "4px 0", borderRadius: 4, border: "1px solid",
+//             borderColor: sizeIdx === i ? "#c8a951" : "#2d4a3e",
+//             background: sizeIdx === i ? "#c8a951" : "transparent",
+//             color: sizeIdx === i ? "#0d1f16" : "#c8b89a",
+//             cursor: "pointer", fontSize: 12, fontFamily: "serif", letterSpacing: 1,
+//           }}>
+//             {p.label}
+//           </button>
+//         ))}
+//         <span style={{ color: "#c8b89a", fontSize: 11, opacity: 0.4, marginLeft: 4 }}>
+//           {width}×{height}px
+//         </span>
+//       </div>
 
-      {/* Selected info */}
-      {selected.size > 0 && (
-        <div style={{
-          textAlign: "center", marginBottom: 20,
-          color: "#c8a951", fontSize: 13, letterSpacing: 1
-        }}>
-          Selected: {[...selected].join("  ·  ")}
-        </div>
-      )}
+//       {/* Selected info */}
+//       {selected.size > 0 && (
+//         <div style={{
+//           textAlign: "center", marginBottom: 20,
+//           color: "#c8a951", fontSize: 13, letterSpacing: 1
+//         }}>
+//           Selected: {[...selected].join("  ·  ")}
+//         </div>
+//       )}
 
-      {/* Card Grid */}
-      <div style={{
-        display: "flex", flexWrap: "wrap", gap: 10,
-        justifyContent: "center", maxWidth: 1200, margin: "0 auto",
-        paddingBottom: Math.round(height * 0.12),
-      }}>
-        {displayed.map(({ rank, suit }) => {
-          const key = `${rank.value}-${suit}`;
-          return (
-            <PlayingCard
-              key={key}
-              rank={rank}
-              suit={suit}
-              faceDown={showBack}
-              selected={selected.has(key)}
-              onClick={() => toggle(key)}
-              width={width}
-              height={height}
-            />
-          );
-        })}
-      </div>
+//       {/* Card Grid */}
+//       <div style={{
+//         display: "flex", flexWrap: "wrap", gap: 10,
+//         justifyContent: "center", maxWidth: 1200, margin: "0 auto",
+//         paddingBottom: Math.round(height * 0.12),
+//       }}>
+//         {displayed.map(({ rank, suit }) => {
+//           const key = `${rank.value}-${suit}`;
+//           return (
+//             <PlayingCard
+//               key={key}
+//               rank={rank}
+//               suit={suit}
+//               faceDown={showBack}
+//               selected={selected.has(key)}
+//               onClick={() => toggle(key)}
+//               width={width}
+//               height={height}
+//             />
+//           );
+//         })}
+//       </div>
 
-      {/* Footer */}
-      <div style={{
-        textAlign: "center", marginTop: 40,
-        color: "#2d4a3e", fontSize: 11, letterSpacing: 3
-      }}>
-        ◆ CLICK CARDS TO SELECT · 點擊選牌 ◆
-      </div>
-    </div>
-  );
-}
+//       {/* Footer */}
+//       <div style={{
+//         textAlign: "center", marginTop: 40,
+//         color: "#2d4a3e", fontSize: 11, letterSpacing: 3
+//       }}>
+//         ◆ CLICK CARDS TO SELECT · 點擊選牌 ◆
+//       </div>
+//     </div>
+//   );
+// }
