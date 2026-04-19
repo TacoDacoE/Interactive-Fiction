@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 // ─── Design Tokens ───────────────────────────────────────────────
 const SUITS = {
   spades: { symbol: "♠", zh: "黑", color: "#1a1a2e", accent: "#2d4a3e" },
