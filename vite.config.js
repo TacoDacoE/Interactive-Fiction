@@ -6,5 +6,7 @@ export default defineConfig({
   base: '/Interactive-Fiction/',
   test: {
     environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
   },
 })
