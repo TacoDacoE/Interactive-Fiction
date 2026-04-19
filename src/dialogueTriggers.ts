@@ -4,7 +4,7 @@ export interface PageData {
   content: string
 }
 
-type Suit = "spades" | "clubs" | "diamonds" | "hearts";
+export type Suit = "spades" | "clubs" | "diamonds" | "hearts";
 
 export interface DialogueTrigger {
   id: string  // add a stable unique id
@@ -13,7 +13,7 @@ export interface DialogueTrigger {
   pages: PageData[]
 }
 
-const dialogueTriggers: DialogueTrigger[] = [
+export const dialogueTriggers: DialogueTrigger[] = [
   {
     id: 'insert descriptor about scenario',
     suit: 'hearts',
@@ -38,7 +38,7 @@ const dialogueTriggers: DialogueTrigger[] = [
       ],
   },
   {
-    id: 'insert descriptor about scenario',
+    id: 'insert descriptor about scenario2',
     suit: 'spades',
     scoreRange: [31, 1000],
     pages:

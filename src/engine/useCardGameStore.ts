@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
 import { evaluateTienLenHand } from './EvaluateHand'
 import { PLAY_HAND_LIMIT, SCORE_TO_BEAT } from '../constants'
+import { dialogueTriggers, PageData, Suit } from '../dialogueTriggers'
+import { resolveDialogue } from './resolveDialogue'
 
 // --- Types ---
 
@@ -28,8 +30,10 @@ type CardGameState = {
   playsRemaining: number
   gameOver: boolean
   gameResult: GameResult
+  triggeredDialogueIds: string[]
+  activeDialoguePages: PageData[] | null
+  activeDialogueSuit: Suit | null
 
-  // Actions
   drawCard: () => void
   drawCards: (amount: number) => void
   toggleSelect: (id: string) => void
@@ -40,6 +44,7 @@ type CardGameState = {
   resetGame: () => void
   sortBySuit: () => void
   sortByRank: () => void
+  dismissDialogue: () => void
 }
 
 // --- Helpers ---
@@ -66,10 +71,6 @@ function shuffle<T>(arr: T[]): T[] {
       ;[a[i], a[j]] = [a[j], a[i]]
   }
   return a
-}
-
-function scoreCards(cards: Card[]): number {
-  return cards.reduce((sum, card) => sum + card.value, 0)
 }
 
 const BIG2_RANK_ORDER: Record<string, number> = {
@@ -104,17 +105,71 @@ function resolveGameOver(
   handSize: number,
   score: number
 ): { gameOver: boolean; gameResult: GameResult } {
-  if (playsRemaining > 0) return { gameOver: false, gameResult: null }
-  if (playsRemaining === 0) return {
-    gameOver: true,
-    gameResult: score >= SCORE_TO_BEAT ? 'win' : 'loss',
+  console.log('[resolveGameOver] inputs:', { playsRemaining, drawsRemaining, handSize, score, SCORE_TO_BEAT })
+
+  if (playsRemaining > 0) {
+    console.log('[resolveGameOver] → not over (plays remaining)')
+    return { gameOver: false, gameResult: null }
+  }
+  if (playsRemaining === 0) {
+    const result = score >= SCORE_TO_BEAT ? 'win' : 'loss'
+    console.log(`[resolveGameOver] → GAME OVER (0 plays left) | score ${score} vs target ${SCORE_TO_BEAT} → ${result}`)
+    return { gameOver: true, gameResult: result }
   }
   const cantContinue = handSize === 0 && drawsRemaining === 0
-  if (!cantContinue) return { gameOver: false, gameResult: null }
-  return {
-    gameOver: true,
-    gameResult: score >= SCORE_TO_BEAT ? 'win' : 'loss',
+  if (!cantContinue) {
+    console.log('[resolveGameOver] → not over (can still continue)')
+    return { gameOver: false, gameResult: null }
   }
+  const result = score >= SCORE_TO_BEAT ? 'win' : 'loss'
+  console.log(`[resolveGameOver] → GAME OVER (no hand + no draws) | score ${score} vs target ${SCORE_TO_BEAT} → ${result}`)
+  return { gameOver: true, gameResult: result }
+}
+
+// --- Dialogue Resolution Debug Wrapper ---
+
+function resolveDialogueDebug(
+  suitScores: number[],
+  triggeredDialogueIds: string[]
+) {
+  const SUIT_NAMES = ['spades', 'clubs', 'diamonds', 'hearts']
+  const maxScore = Math.max(...suitScores)
+  const dominantIndex = suitScores.indexOf(maxScore)
+  const dominantSuit = SUIT_NAMES[dominantIndex]
+
+  console.group('[resolveDialogue] Evaluating triggers')
+  console.log('suitScores:', { spades: suitScores[0], clubs: suitScores[1], diamonds: suitScores[2], hearts: suitScores[3] })
+  console.log('dominantSuit:', dominantSuit, '| dominantScore:', maxScore)
+  console.log('triggeredDialogueIds:', triggeredDialogueIds)
+  console.log('dialogueTriggers available:', dialogueTriggers.map(t => ({
+    id: t.id,
+    suit: t.suit,
+    scoreRange: t.scoreRange,
+  })))
+
+  // Log why each trigger passes or fails
+  dialogueTriggers.forEach((t) => {
+    const alreadyTriggered = triggeredDialogueIds.includes(t.id)
+    const suitMatch = t.suit === dominantSuit
+    const scoreMatch = maxScore >= t.scoreRange[0] && maxScore <= t.scoreRange[1]
+    const passes = !alreadyTriggered && suitMatch && scoreMatch
+
+    console.log(
+      `  trigger "${t.id}":`,
+      passes ? '✅ MATCH' : '❌ skip',
+      {
+        alreadyTriggered,
+        suitMatch: `${t.suit} === ${dominantSuit} → ${suitMatch}`,
+        scoreMatch: `${maxScore} in [${t.scoreRange[0]}, ${t.scoreRange[1]}] → ${scoreMatch}`,
+      }
+    )
+  })
+
+  const match = resolveDialogue(dialogueTriggers, suitScores, triggeredDialogueIds)
+  console.log('resolveDialogue result:', match ? `matched "${match.id}"` : 'NO MATCH')
+  console.groupEnd()
+
+  return match
 }
 
 // --- Store ---
@@ -131,29 +186,35 @@ export const useCardGame = create<CardGameState>((set) => ({
   playsRemaining: PLAY_HAND_LIMIT,
   gameOver: false,
   gameResult: null,
+  triggeredDialogueIds: [],
+  activeDialoguePages: null,
+  activeDialogueSuit: null,
 
   drawCard: () =>
     set((state) => {
-      if (state.gameOver) return state
-      if (state.deck.length === 0 || state.hand.length >= 13 || state.drawsRemaining === 0) return state
+      if (state.gameOver) { console.log('[drawCard] blocked — game over'); return state }
+      if (state.deck.length === 0) { console.log('[drawCard] blocked — deck empty'); return state }
+      if (state.hand.length >= 13) { console.log('[drawCard] blocked — hand full'); return state }
+      if (state.drawsRemaining === 0) { console.log('[drawCard] blocked — no draws remaining'); return state }
       const [top, ...rest] = state.deck
+      console.log('[drawCard] drew:', `${top.rank}${top.suit[0]}`, '| draws remaining:', state.drawsRemaining - 1)
       return { deck: rest, hand: [...state.hand, top], drawsRemaining: state.drawsRemaining - 1 }
     }),
 
   drawCards: (amount: number) =>
     set((state) => {
-      if (state.gameOver) return state
+      if (state.gameOver) { console.log('[drawCards] blocked — game over'); return state }
       const toDraw = Math.min(amount, state.deck.length)
       const drawn = state.deck.slice(0, toDraw)
       const rest = state.deck.slice(toDraw)
-      console.log('[drawCards] drew', toDraw, 'cards:', drawn.map(c => `${c.rank}${c.suit[0]}`), '| deck remaining:', rest.length)
+      console.log('[drawCards] drew', toDraw, 'of requested', amount, '| cards:', drawn.map(c => `${c.rank}${c.suit[0]}`), '| deck remaining:', rest.length)
       return { deck: rest, hand: [...state.hand, ...drawn] }
     }),
 
   toggleSelect: (id) =>
     set((state) => {
       if (state.phase !== 'playing' || state.gameOver) {
-        console.log('[toggleSelect] blocked — phase is', state.phase, '| gameOver:', state.gameOver)
+        console.log('[toggleSelect] blocked — phase:', state.phase, '| gameOver:', state.gameOver)
         return state
       }
       const isDeselecting = state.selected.includes(id)
@@ -167,9 +228,11 @@ export const useCardGame = create<CardGameState>((set) => ({
   playSelected: () =>
     set((state) => {
       if (state.phase !== 'playing' || state.gameOver) {
+        console.log('[playSelected] blocked — phase:', state.phase, '| gameOver:', state.gameOver)
         return state
       }
       if (state.selected.length === 0) {
+        console.log('[playSelected] blocked — nothing selected')
         return state
       }
       if (state.playsRemaining <= 0) {
@@ -179,7 +242,7 @@ export const useCardGame = create<CardGameState>((set) => ({
       const toPlay = state.hand.filter((c) => state.selected.includes(c.id))
       const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
       const nextPlaysRemaining = state.playsRemaining - 1
-      console.log('[playSelected] plays remaining after this:', nextPlaysRemaining)
+      console.log('[playSelected] playing:', toPlay.map(c => `${c.rank}${c.suit[0]}`), '| plays remaining after:', nextPlaysRemaining)
       return {
         hand: nextHand,
         played: sortByRankFn(sortBySuitFn(toPlay)),
@@ -192,17 +255,24 @@ export const useCardGame = create<CardGameState>((set) => ({
   discardSelected: () =>
     set((state) => {
       if (state.phase !== 'playing' || state.gameOver) {
-        console.log('[discardSelected] blocked — phase is', state.phase, '| gameOver:', state.gameOver)
+        console.log('[discardSelected] blocked — phase:', state.phase, '| gameOver:', state.gameOver)
         return state
       }
       if (state.selected.length === 0) {
         console.log('[discardSelected] blocked — nothing selected')
         return state
       }
+
       const toDiscard = state.hand.filter((c) => state.selected.includes(c.id))
       const nextHand = state.hand.filter((c) => !state.selected.includes(c.id))
       console.log('[discardSelected] discarding:', toDiscard.map(c => `${c.rank}${c.suit[0]}`))
-      console.log('[discardSelected] hand after:', nextHand.map(c => `${c.rank}${c.suit[0]}`))
+      console.log('[discardSelected] hand after discard:', nextHand.map(c => `${c.rank}${c.suit[0]}`))
+      console.log('[discardSelected] state going into resolveGameOver:', {
+        playsRemaining: state.playsRemaining,
+        drawsRemaining: state.drawsRemaining,
+        nextHandSize: nextHand.length,
+        score: state.score,
+      })
 
       const { gameOver, gameResult } = resolveGameOver(
         state.playsRemaining,
@@ -211,11 +281,34 @@ export const useCardGame = create<CardGameState>((set) => ({
         state.score
       )
 
+      let activeDialoguePages = state.activeDialoguePages
+      let activeDialogueSuit = state.activeDialogueSuit
+      let triggeredDialogueIds = state.triggeredDialogueIds
+
+      if (gameOver) {
+        console.log('[discardSelected] game is over — attempting dialogue resolution')
+        const match = resolveDialogueDebug(state.suitScores, triggeredDialogueIds)
+        if (match) {
+          console.log('[discardSelected] ✅ dialogue matched:', match.id, '| pages:', match.pages.length)
+          activeDialoguePages = match.pages
+          activeDialogueSuit = match.suit
+          triggeredDialogueIds = [...triggeredDialogueIds, match.id]
+        } else {
+          console.warn('[discardSelected] ⚠️ game over but NO dialogue matched — modal will not open')
+        }
+      } else {
+        console.log('[discardSelected] game not over — skipping dialogue resolution')
+      }
+
+      console.log('[discardSelected] returning state:', { gameOver, gameResult, hasActiveDialogue: !!activeDialoguePages })
       return {
         hand: nextHand,
         selected: [],
         gameOver,
         gameResult,
+        activeDialoguePages,
+        activeDialogueSuit,
+        triggeredDialogueIds,
       }
     }),
 
@@ -229,6 +322,27 @@ export const useCardGame = create<CardGameState>((set) => ({
     set((state) => {
       const result = evaluateTienLenHand(state.played)
       const newScore = state.score + result.score
+      const newSuitScores = [
+        state.suitScores[0] + result.spadesScore,
+        state.suitScores[1] + result.clubsScore,
+        state.suitScores[2] + result.diamondsScore,
+        state.suitScores[3] + result.heartsScore,
+      ]
+
+      console.log('[clearPlayed] hand result:', result)
+      console.log('[clearPlayed] score:', state.score, '+', result.score, '=', newScore)
+      console.log('[clearPlayed] newSuitScores:', {
+        spades: newSuitScores[0],
+        clubs: newSuitScores[1],
+        diamonds: newSuitScores[2],
+        hearts: newSuitScores[3],
+      })
+      console.log('[clearPlayed] state going into resolveGameOver:', {
+        playsRemaining: state.playsRemaining,
+        drawsRemaining: state.drawsRemaining,
+        handSize: state.hand.length,
+        newScore,
+      })
 
       const { gameOver, gameResult } = resolveGameOver(
         state.playsRemaining,
@@ -237,22 +351,36 @@ export const useCardGame = create<CardGameState>((set) => ({
         newScore
       )
 
+      let activeDialoguePages = state.activeDialoguePages
+      let activeDialogueSuit = state.activeDialogueSuit
+      let triggeredDialogueIds = state.triggeredDialogueIds
+
       if (gameOver) {
-        console.log(`[clearPlayed] game over — result: ${gameResult} | score: ${newScore} | target: ${SCORE_TO_BEAT}`)
+        console.log('[clearPlayed] game is over — attempting dialogue resolution')
+        const match = resolveDialogueDebug(newSuitScores, triggeredDialogueIds)
+        if (match) {
+          console.log('[clearPlayed] ✅ dialogue matched:', match.id, '| pages:', match.pages.length)
+          activeDialoguePages = match.pages
+          activeDialogueSuit = match.suit
+          triggeredDialogueIds = [...triggeredDialogueIds, match.id]
+        } else {
+          console.warn('[clearPlayed] ⚠️ game over but NO dialogue matched — modal will not open')
+        }
+      } else {
+        console.log('[clearPlayed] game not over yet — skipping dialogue')
       }
 
+      console.log('[clearPlayed] returning state:', { gameOver, gameResult, hasActiveDialogue: !!activeDialoguePages })
       return {
         played: [],
         score: newScore,
+        suitScores: newSuitScores,
         phase: 'playing',
-        suitScores: [
-          state.suitScores[0] + result.spadesScore,
-          state.suitScores[1] + result.clubsScore,
-          state.suitScores[2] + result.diamondsScore,
-          state.suitScores[3] + result.heartsScore,
-        ],
         gameOver,
         gameResult,
+        activeDialoguePages,
+        activeDialogueSuit,
+        triggeredDialogueIds,
       }
     }),
 
@@ -270,6 +398,8 @@ export const useCardGame = create<CardGameState>((set) => ({
       playsRemaining: PLAY_HAND_LIMIT,
       gameOver: false,
       gameResult: null,
+      triggeredDialogueIds: [],
+      activeDialoguePages: null,
     })
   },
 
@@ -284,20 +414,36 @@ export const useCardGame = create<CardGameState>((set) => ({
       console.log('[sortByRank] sorting hand by rank')
       return { hand: sortByRankFn(state.hand) }
     }),
+
+  dismissDialogue: () => {
+    console.log('[dismissDialogue] clearing activeDialoguePages')
+    return set({ activeDialoguePages: null, activeDialogueSuit: null })
+  },
 }))
 
 // --- Hooks ---
 
 export function useInitialDraw(amount: number) {
   const drawCards = useCardGame((state) => state.drawCards)
+  const gameOver = useCardGame((state) => state.gameOver)
+  const hand = useCardGame((state) => state.hand)
   const hasDrawn = useRef(false)
+
+  // Reset the guard when game ends so next reset can draw again
+  useEffect(() => {
+    if (gameOver) {
+      hasDrawn.current = false
+    }
+  }, [gameOver])
 
   useEffect(() => {
     if (hasDrawn.current) return
-    hasDrawn.current = true
-    console.log('[useInitialDraw] drawing initial hand of', amount)
-    drawCards(amount)
-  }, [])
+    if (hand.length === 0 && !gameOver) {
+      hasDrawn.current = true
+      console.log('[useInitialDraw] drawing initial hand of', amount)
+      drawCards(amount)
+    }
+  }, [gameOver])
 }
 
 export function usePhaseSequence(resolvingMs = 1200, clearingMs = 600) {

@@ -3,6 +3,8 @@ import DisplayModal from './components/Modal/DisplayModal.tsx'
 import MainPage from './pages/MainPage.tsx';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { usePhaseSequence } from './engine/useCardGameStore.ts'
+import GameOverOverlay from './components/SpecialDisplays/GameOverOverlay.tsx';
+import WinOverlay from './components/SpecialDisplays/WinOverlay.tsx';
 
 const theme = createTheme({
   typography: {
@@ -46,6 +48,8 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <MainPage />
+      <WinOverlay />
+      <GameOverOverlay />
       <DisplayModal />
     </ThemeProvider>
   )
