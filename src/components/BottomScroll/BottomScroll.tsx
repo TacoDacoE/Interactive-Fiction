@@ -1,9 +1,9 @@
 import { Box, ButtonBase, Stack } from "@mui/material"
 import LeftDecor from "../../assets/decorations/left_scroll_decor.svg";
 import RightDecor from "../../assets/decorations/right_scroll_decor.svg";
-import PlayingCard from "../Card/PlayingCardDeck";
-import { RANKS } from "../Card/PlayingCardDeck";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import PlayingCard from "../Card/PlayingCard";
+import { RANKS } from "../Card/constants";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useCardGame, useInitialDraw } from "../../engine/useCardGameStore";
 
 const CARD_WIDTH = 100

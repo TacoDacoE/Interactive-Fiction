@@ -1,1 +1,1 @@
-export { default as PlayingCard } from './PlayingCardDeck';
+export { default as PlayingCard } from './PlayingCard';

@@ -19,7 +19,7 @@ const pages: PageData[] = [
   },
   {
     name: 'Carol',
-    imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
+    imageSrc: '',
     content: 'Carol was a wise scholar who...',
   },
 ]
@@ -77,7 +77,7 @@ const DisplayModal = () => {
           <img style={{ position: "absolute", top: "0px", left: "0px", width: "36px", transform: "translate(-34px,-40px)" }} src={StoryScrollSide} alt="" />
           <img style={{ position: "absolute", top: "0px", right: "0px", width: "36px", transform: "translate(34px,-40px)" }} src={StoryScrollSide} alt="" />
 
-          <Typography id="modal-modal-title" variant="h2" fontWeight={600}>
+          <Typography id="modal-modal-title" variant="h2" fontWeight={600} color="#212121">
             Game over - theme:
           </Typography>
 
@@ -85,9 +85,18 @@ const DisplayModal = () => {
             page={pages[currentPage]}
             renderActions={() => (
               <Button
-                variant='outlined'
+                variant='contained'
+                disableElevation
                 endIcon={<ChevronRightIcon />}
-                sx={{ border: '1.5px solid', borderRadius: 8 }}
+                sx={{
+                  bgcolor: '#FFCFA1',
+                  color: '#212121',
+                  '&:hover': { bgcolor: '#d6a77a', borderColor: '#212121' },
+                  border: 1,
+                  borderColor: '#212121',
+                  borderRadius: 5,
+                  px: 3,
+                }}
                 onClick={handleNext}
               >
                 {isLastPage ? 'Close' : 'Next'}

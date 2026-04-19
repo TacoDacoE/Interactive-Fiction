@@ -1,6 +1,6 @@
 import { Box } from "@mui/material"
-import PlayingCard from "../Card/PlayingCardDeck"
-import { RANKS } from "../Card/PlayingCardDeck"
+import PlayingCard from "../Card/PlayingCard"
+import { RANKS } from "../Card/constants"
 import { useCardGame } from "../../engine/useCardGameStore"
 import { evaluateTienLenHand } from "../../engine/EvaluateHand"
 import { keyframes } from "@mui/system"

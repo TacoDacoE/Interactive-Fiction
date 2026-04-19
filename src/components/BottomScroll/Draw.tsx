@@ -1,7 +1,7 @@
 import { ButtonBase, Box, Stack, Typography } from "@mui/material"
-import { PlayingCardBack } from "../Card/PlayingCardDeck"
 import { useCardGame } from "../../engine/useCardGameStore"
 import { useRef, useState } from "react"
+import PlayingCardBack from "../Card/PlayingCardBack"
 
 const CARD_WIDTH = 100
 const CARD_HEIGHT = 140
