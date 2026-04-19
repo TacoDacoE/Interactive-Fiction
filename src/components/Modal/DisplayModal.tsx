@@ -2,39 +2,29 @@ import { Box, Button, Stack, Typography } from '@mui/material'
 import Modal from '@mui/material/Modal'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StoryScrollSide from '../../assets/decorations/StoryScrollSides.svg'
-import { useCardGame } from '../../engine/useCardGameStore'
-import Page, { PageData } from './Page'
-import { useState } from 'react'
-
-const pages: PageData[] = [
-  {
-    name: 'Alice',
-    imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
-    content: 'Alice was a brave adventurer who...',
-  },
-  {
-    name: 'Bob',
-    imageSrc: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
-    content: 'Bob was a cunning merchant who...',
-  },
-  {
-    name: 'Carol',
-    imageSrc: '',
-    content: 'Carol was a wise scholar who...',
-  },
-]
+import { useCardGame, useInitialDraw } from '../../engine/useCardGameStore'
+import Page from './Page'
+import { useEffect, useState } from 'react'
 
 const DisplayModal = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const activeDialoguePages = useCardGame((s) => s.activeDialoguePages)
+  const activeDialogueSuit = useCardGame((s) => s.activeDialogueSuit)
+  const dismissDialogue = useCardGame((s) => s.dismissDialogue)
+  const resetGame = useCardGame((s) => s.resetGame)
   const [currentPage, setCurrentPage] = useState(0)
-  const gameResult = useCardGame((s) => s.gameResult)
-  const gameOver = useCardGame((s) => s.gameOver)
 
+  // Reset page index whenever new dialogue loads
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [activeDialoguePages])
+
+  const pages = activeDialoguePages ?? []
   const isLastPage = currentPage === pages.length - 1
 
   const handleNext = () => {
     if (isLastPage) {
-      setIsOpen(false)
+      resetGame();
+      dismissDialogue()
     } else {
       setCurrentPage((prev) => prev + 1)
     }
@@ -42,7 +32,7 @@ const DisplayModal = () => {
 
   return (
     <Modal
-      open={isOpen}
+      open={!!activeDialoguePages}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
       slotProps={{
@@ -65,6 +55,7 @@ const DisplayModal = () => {
             bgcolor: "#FFCFA1",
             boxShadow: "inset 0 20px 0 #4D9388, inset 0 -20px 0 #4D9388",
             width: 0,
+            animationDelay: '3s',
             animation: "expandWidth 0.4s ease-in forwards",
             mx: "auto",
             "@keyframes expandWidth": {
@@ -78,7 +69,7 @@ const DisplayModal = () => {
           <img style={{ position: "absolute", top: "0px", right: "0px", width: "36px", transform: "translate(34px,-40px)" }} src={StoryScrollSide} alt="" />
 
           <Typography id="modal-modal-title" variant="h2" fontWeight={600} color="#212121">
-            Game over - theme:
+            Game over - theme: {activeDialogueSuit}
           </Typography>
 
           <Page
@@ -99,7 +90,7 @@ const DisplayModal = () => {
                 }}
                 onClick={handleNext}
               >
-                {isLastPage ? 'Close' : 'Next'}
+                {isLastPage ? 'Play again' : 'Next'}
               </Button>
             )}
           />

@@ -11,6 +11,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import ActionBar from "../components/BottomScroll/ActionBar";
 import CardGrid from "../components/PlayArea/CardGrid.js";
 import Draw from "../components/BottomScroll/Draw";
+import { useCardGame } from "../engine/useCardGameStore.js";
 
 const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
@@ -31,6 +32,20 @@ export default function MainPage({ title = "Page Title" }) {
       unmute();
     }
   }, [backgroundMuted]);
+
+
+  const gameOver = useCardGame((s) => s.gameOver)
+  const activeDialoguePages = useCardGame((s) => s.activeDialoguePages)
+  const resetGame = useCardGame((s) => s.resetGame)
+
+  useEffect(() => {
+    if (!gameOver) return
+    if (activeDialoguePages !== null) return  // dialogue is handling it
+
+    // Give the "Game Over" overlay time to finish (600 fade in + 2000 hold + 600 fade out)
+    const t = setTimeout(() => resetGame(), 3000)
+    return () => clearTimeout(t)
+  }, [gameOver, activeDialoguePages])
 
   return (
     // Full screen backdrop — centers the game box
