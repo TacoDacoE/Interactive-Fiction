@@ -36,14 +36,14 @@ export default function MainPage({ title = "Page Title" }) {
 
   const gameOver = useCardGame((s) => s.gameOver)
   const activeDialoguePages = useCardGame((s) => s.activeDialoguePages)
-  const resetGame = useCardGame((s) => s.resetGame)
+  const nextRound = useCardGame((s) => s.nextRound)
 
   useEffect(() => {
     if (!gameOver) return
     if (activeDialoguePages !== null) return  // dialogue is handling it
 
     // Give the "Game Over" overlay time to finish (600 fade in + 2000 hold + 600 fade out)
-    const t = setTimeout(() => resetGame(), 3000)
+    const t = setTimeout(() => nextRound(), 3000)
     return () => clearTimeout(t)
   }, [gameOver, activeDialoguePages])
 

@@ -10,7 +10,7 @@ const DisplayModal = () => {
   const activeDialoguePages = useCardGame((s) => s.activeDialoguePages)
   const activeDialogueSuit = useCardGame((s) => s.activeDialogueSuit)
   const dismissDialogue = useCardGame((s) => s.dismissDialogue)
-  const resetGame = useCardGame((s) => s.resetGame)
+  const nextRound = useCardGame((s) => s.nextRound)
   const [currentPage, setCurrentPage] = useState(0)
 
   // Reset page index whenever new dialogue loads
@@ -23,7 +23,7 @@ const DisplayModal = () => {
 
   const handleNext = () => {
     if (isLastPage) {
-      resetGame();
+      nextRound();
       dismissDialogue()
     } else {
       setCurrentPage((prev) => prev + 1)
