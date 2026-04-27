@@ -1,4 +1,4 @@
-import { Box, IconButton, Stack, Tooltip, } from "@mui/material";
+import { Box, Icon, IconButton, Stack, Tooltip, } from "@mui/material";
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import BottomScroll from "../components/BottomScroll/BottomScroll";
 import LeftScroll from "../components/LeftScroll/LeftScroll";
@@ -12,6 +12,7 @@ import ActionBar from "../components/BottomScroll/ActionBar";
 import CardGrid from "../components/PlayArea/CardGrid.js";
 import Draw from "../components/BottomScroll/Draw";
 import { useCardGame } from "../engine/useCardGameStore.js";
+import MultModal from "../components/Modal/MultModal.js";
 
 const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
@@ -19,6 +20,7 @@ const GAME_HEIGHT = 720;
 export default function MainPage({ title = "Page Title" }) {
   const layoutColors = false;
   const [backgroundMuted, setBackgroundMuted] = useState<boolean>(false);
+  const [multModalOpen, setMultModalOpen] = useState<boolean>(false);
   const { mute, unmute } = useBackgroundMusic(themeSong, 0.75);
 
   const toggleSound = () => {
@@ -92,7 +94,14 @@ export default function MainPage({ title = "Page Title" }) {
         {/* Main content */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
           <Box sx={{ flex: 1, display: "flex", bgcolor: layoutColors ? "red" : "transparent", minHeight: 0, position: "relative" }}>
-            <Box sx={{ position: "absolute", top: 12, right: 16 }}>
+            <Stack sx={{ position: "absolute", top: 12, right: 16 }} spacing={1}>
+              <Tooltip title="Rules">
+                <IconButton size="medium" >
+                  <IconButton onClick={() => setMultModalOpen(true)}>
+                    <MenuBookIcon fontSize="medium" sx={{ color: "white" }} />
+                  </IconButton>
+                </IconButton>
+              </Tooltip>
               <Tooltip title={backgroundMuted ? "Unmute" : "Mute"}>
                 <IconButton onClick={() => toggleSound()} size="medium" >
                   {backgroundMuted ?
@@ -101,7 +110,7 @@ export default function MainPage({ title = "Page Title" }) {
                   }
                 </IconButton>
               </Tooltip>
-            </Box>
+            </Stack>
             <CardGrid />
           </Box>
           <Box sx={{
@@ -130,6 +139,7 @@ export default function MainPage({ title = "Page Title" }) {
             </Box>
           </Box>
         </Box>
+        <MultModal open={multModalOpen} onClose={() => setMultModalOpen(false)} />
       </WavyBackgroundBox>
     </Box>
   );
