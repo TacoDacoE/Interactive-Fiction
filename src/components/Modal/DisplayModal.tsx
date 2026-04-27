@@ -1,17 +1,28 @@
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import Modal from '@mui/material/Modal'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import StoryScrollSide from '../../assets/decorations/StoryScrollSides.svg'
-import { useCardGame, useInitialDraw } from '../../engine/useCardGameStore'
+import { useCardGame } from '../../engine/useCardGameStore'
 import Page from './Page'
 import { useEffect, useState } from 'react'
+import ClickFx from '../../assets/sounds/click.mp3';
+import { useSoundFX } from '../../hooks/useSoundFX'
+
+const THEME_MAP = {
+  "hearts": "♡ Love ♡",
+  "clubs": "♧ Anger ♧",
+  "diamonds": "♢ Joy ♢",
+  "spades": "♤ Sadness ♤",
+}
 
 const DisplayModal = () => {
   const activeDialoguePages = useCardGame((s) => s.activeDialoguePages)
   const activeDialogueSuit = useCardGame((s) => s.activeDialogueSuit)
+  const activeDialogueCharacters = useCardGame((s) => s.activeDialogueCharacters)
   const dismissDialogue = useCardGame((s) => s.dismissDialogue)
   const nextRound = useCardGame((s) => s.nextRound)
   const [currentPage, setCurrentPage] = useState(0)
+  const { playSound } = useSoundFX(ClickFx, 0.4);
 
   // Reset page index whenever new dialogue loads
   useEffect(() => {
@@ -22,6 +33,7 @@ const DisplayModal = () => {
   const isLastPage = currentPage === pages.length - 1
 
   const handleNext = () => {
+    playSound();
     if (isLastPage) {
       nextRound();
       dismissDialogue()
@@ -69,11 +81,12 @@ const DisplayModal = () => {
           <img style={{ position: "absolute", top: "0px", right: "0px", width: "36px", transform: "translate(34px,-40px)" }} src={StoryScrollSide} alt="" />
 
           <Typography id="modal-modal-title" variant="h2" fontWeight={600} color="#212121">
-            Game over - theme: {activeDialogueSuit}
+            Game over - theme: {activeDialogueSuit ? THEME_MAP[activeDialogueSuit] : ''}
           </Typography>
 
           <Page
             page={pages[currentPage]}
+            sceneCharacters={activeDialogueCharacters ?? []}
             renderActions={() => (
               <Button
                 variant='contained'

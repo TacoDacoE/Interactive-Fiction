@@ -5,6 +5,8 @@ import PlayingCard from "../Card/PlayingCard";
 import { RANKS } from "../Card/constants";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useCardGame, useInitialDraw } from "../../engine/useCardGameStore";
+import cardClick from "../../assets/sounds/click.mp3";
+import { useSoundFX } from "../../hooks/useSoundFX";
 
 const CARD_WIDTH = 100
 const STACK_GAP = 8 // default MUI Stack gap in px when not overlapping
@@ -13,6 +15,7 @@ const BottomScroll = () => {
   const hand = useCardGame((state) => state.hand)
   const toggleSelect = useCardGame((state) => state.toggleSelect)
   const selected = useCardGame((state) => state.selected)
+  const { playSound } = useSoundFX(cardClick, 0.4);
 
   useInitialDraw(13)
 
@@ -101,7 +104,10 @@ const BottomScroll = () => {
                   <PlayingCard
                     rank={RANKS[card.rank]}
                     suit={card.suit}
-                    onClick={() => toggleSelect(card.id)}
+                    onClick={() => {
+                      playSound();
+                      toggleSelect(card.id);
+                    }}
                     width={CARD_WIDTH}
                     height={140}
                   />

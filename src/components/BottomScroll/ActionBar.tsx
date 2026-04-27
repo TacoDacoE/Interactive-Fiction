@@ -3,28 +3,31 @@ import { useCardGame } from "../../engine/useCardGameStore";
 import { evaluateTienLenHand } from "../../engine/EvaluateHand";
 import { useEffect } from "react";
 import { PLAY_HAND_LIMIT } from "../../constants";
+import chimeFx from "../../assets/sounds/chime.mp3";
+import { useSoundFX } from "../../hooks/useSoundFX";
 
 const ActionBar = () => {
-  const sortBySuit = useCardGame((s) => s.sortBySuit)
-  const sortByRank = useCardGame((s) => s.sortByRank)
-  const played = useCardGame((s) => s.played);
+  const sortBySuit = useCardGame((s) => s.sortBySuit);
+  const sortByRank = useCardGame((s) => s.sortByRank);
   const playSelected = useCardGame((s) => s.playSelected);
   const discardSelected = useCardGame((s) => s.discardSelected);
   const selected = useCardGame((s) => s.selected);
   const hand = useCardGame((s) => s.hand);
-  const phase = useCardGame((s) => s.phase);
   const playsRemaining = useCardGame((s) => s.playsRemaining);
 
+  const { playSound } = useSoundFX(chimeFx, 0.5);
 
-  useEffect(() => {
-    if (phase === 'resolving' && played.length > 0) {
-      const result = evaluateTienLenHand(played)
-    }
-  }, [phase])
 
   return (
     <Stack direction="row" display="flex" alignItems="center">
-      <Button sx={{ color: "primary.light" }} disabled={selected.length == 0} onClick={playSelected}>
+      <Button
+        sx={{ color: "primary.light" }}
+        disabled={selected.length == 0}
+        onClick={() => {
+          playSound();
+          playSelected();
+        }}
+      >
         Play ({playsRemaining}/{PLAY_HAND_LIMIT})
       </Button>
       <Button sx={{ color: "primary.light" }} onClick={sortByRank}>

@@ -92,12 +92,7 @@ export default function MainPage({ title = "Page Title" }) {
         {/* Main content */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
           <Box sx={{ flex: 1, display: "flex", bgcolor: layoutColors ? "red" : "transparent", minHeight: 0, position: "relative" }}>
-            <Stack sx={{ position: "absolute", top: 12, right: 16 }} spacing={1}>
-              <Tooltip title="Rules">
-                <IconButton size="medium" >
-                  <MenuBookIcon fontSize="medium" sx={{ color: "white" }} />
-                </IconButton>
-              </Tooltip>
+            <Box sx={{ position: "absolute", top: 12, right: 16 }}>
               <Tooltip title={backgroundMuted ? "Unmute" : "Mute"}>
                 <IconButton onClick={() => toggleSound()} size="medium" >
                   {backgroundMuted ?
@@ -106,7 +101,7 @@ export default function MainPage({ title = "Page Title" }) {
                   }
                 </IconButton>
               </Tooltip>
-            </Stack>
+            </Box>
             <CardGrid />
           </Box>
           <Box sx={{

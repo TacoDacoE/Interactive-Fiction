@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
 import { evaluateTienLenHand } from './EvaluateHand'
 import { PLAY_HAND_LIMIT, SCORE_TO_BEAT } from '../constants'
-import { dialogueTriggers, PageData, Suit } from '../dialogueTriggers'
+import { dialogueTriggers, PageData, SceneCharacter, Suit } from '../dialogueTriggers'
 import { resolveDialogue } from './resolveDialogue'
 
 // --- Types ---
@@ -35,6 +35,7 @@ type CardGameState = {
   triggeredDialogueIds: string[]
   activeDialoguePages: PageData[] | null
   activeDialogueSuit: Suit | null
+  activeDialogueCharacters: SceneCharacter[] | null
 
   drawCard: () => void
   drawCards: (amount: number) => void
@@ -54,7 +55,7 @@ type CardGameState = {
 
 // Every round has 22 cards. After dealing 13, 9 remain drawable.
 // On each loss, 2 penalty cards are added, so round N has 22 + (N-1)*2 cards.
-const ROUND_1_DECK_SIZE = 20
+const ROUND_1_DECK_SIZE = 13
 const INITIAL_HAND_SIZE = 13
 const PENALTY_CARDS_PER_LOSS = 2
 
@@ -125,24 +126,14 @@ function resolveGameOver(
   handSize: number,
   score: number
 ): { gameOver: boolean; gameResult: GameResult } {
-  console.log('[resolveGameOver] inputs:', { playsRemaining, drawsRemaining, handSize, score, SCORE_TO_BEAT })
+  const outOfCards = handSize === 0 && drawsRemaining === 0
+  const outOfPlays = playsRemaining === 0
 
-  if (playsRemaining > 0) {
-    console.log('[resolveGameOver] → not over (plays remaining)')
+  if (!outOfCards && !outOfPlays) {
     return { gameOver: false, gameResult: null }
   }
-  if (playsRemaining === 0) {
-    const result = score >= SCORE_TO_BEAT ? 'win' : 'loss'
-    console.log(`[resolveGameOver] → GAME OVER (0 plays left) | score ${score} vs target ${SCORE_TO_BEAT} → ${result}`)
-    return { gameOver: true, gameResult: result }
-  }
-  const cantContinue = handSize === 0 && drawsRemaining === 0
-  if (!cantContinue) {
-    console.log('[resolveGameOver] → not over (can still continue)')
-    return { gameOver: false, gameResult: null }
-  }
+
   const result = score >= SCORE_TO_BEAT ? 'win' : 'loss'
-  console.log(`[resolveGameOver] → GAME OVER (no hand + no draws) | score ${score} vs target ${SCORE_TO_BEAT} → ${result}`)
   return { gameOver: true, gameResult: result }
 }
 
@@ -211,6 +202,7 @@ export const useCardGame = create<CardGameState>((set) => ({
   triggeredDialogueIds: [],
   activeDialoguePages: null,
   activeDialogueSuit: null,
+  activeDialogueCharacters: null,
 
   drawCard: () =>
     set((state) => {
@@ -304,6 +296,7 @@ export const useCardGame = create<CardGameState>((set) => ({
       )
 
       let activeDialoguePages = state.activeDialoguePages
+      let activeDialogueCharacters = state.activeDialogueCharacters
       let activeDialogueSuit = state.activeDialogueSuit
       let triggeredDialogueIds = state.triggeredDialogueIds
 
@@ -313,6 +306,7 @@ export const useCardGame = create<CardGameState>((set) => ({
         if (match) {
           console.log('[discardSelected] ✅ dialogue matched:', match.id, '| pages:', match.pages.length)
           activeDialoguePages = match.pages
+          activeDialogueCharacters = match.sceneCharacters
           activeDialogueSuit = match.suit
           triggeredDialogueIds = [...triggeredDialogueIds, match.id]
         } else {
@@ -326,9 +320,11 @@ export const useCardGame = create<CardGameState>((set) => ({
       return {
         hand: nextHand,
         selected: [],
+        discardPile: [...state.discardPile, ...toDiscard],
         gameOver,
         gameResult,
         activeDialoguePages,
+        activeDialogueCharacters,
         activeDialogueSuit,
         triggeredDialogueIds,
       }
@@ -374,6 +370,7 @@ export const useCardGame = create<CardGameState>((set) => ({
       )
 
       let activeDialoguePages = state.activeDialoguePages
+      let activeDialogueCharacters = state.activeDialogueCharacters
       let activeDialogueSuit = state.activeDialogueSuit
       let triggeredDialogueIds = state.triggeredDialogueIds
 
@@ -383,6 +380,7 @@ export const useCardGame = create<CardGameState>((set) => ({
         if (match) {
           console.log('[clearPlayed] ✅ dialogue matched:', match.id, '| pages:', match.pages.length)
           activeDialoguePages = match.pages
+          activeDialogueCharacters = match.sceneCharacters
           activeDialogueSuit = match.suit
           triggeredDialogueIds = [...triggeredDialogueIds, match.id]
         } else {
@@ -402,6 +400,7 @@ export const useCardGame = create<CardGameState>((set) => ({
         gameOver,
         gameResult,
         activeDialoguePages,
+        activeDialogueCharacters,
         activeDialogueSuit,
         triggeredDialogueIds,
       }
@@ -426,6 +425,7 @@ export const useCardGame = create<CardGameState>((set) => ({
       roundNumber: 1,
       triggeredDialogueIds: [],
       activeDialoguePages: null,
+      activeDialogueCharacters: null,
       activeDialogueSuit: null,
     })
   },
@@ -473,6 +473,7 @@ export const useCardGame = create<CardGameState>((set) => ({
         roundNumber: nextRoundNumber,
         triggeredDialogueIds: [],
         activeDialoguePages: null,
+        activeDialogueCharacters: null,
         activeDialogueSuit: null,
       }
     }),
@@ -491,7 +492,7 @@ export const useCardGame = create<CardGameState>((set) => ({
 
   dismissDialogue: () => {
     console.log('[dismissDialogue] clearing activeDialoguePages')
-    return set({ activeDialoguePages: null, activeDialogueSuit: null })
+    return set({ activeDialoguePages: null, activeDialogueCharacters: null, activeDialogueSuit: null })
   },
 }))
 
