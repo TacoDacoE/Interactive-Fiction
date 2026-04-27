@@ -23,6 +23,7 @@ type CardGameState = {
   hand: Card[]
   selected: string[]
   played: Card[]
+  discardPile: Card[]   // accumulates all cards played this round; consumed by nextRound
   phase: GamePhase
   score: number
   suitScores: number[]
@@ -30,6 +31,7 @@ type CardGameState = {
   playsRemaining: number
   gameOver: boolean
   gameResult: GameResult
+  roundNumber: number
   triggeredDialogueIds: string[]
   activeDialoguePages: PageData[] | null
   activeDialogueSuit: Suit | null
@@ -42,10 +44,19 @@ type CardGameState = {
   setPhase: (phase: GamePhase) => void
   clearPlayed: () => void
   resetGame: () => void
+  nextRound: () => void
   sortBySuit: () => void
   sortByRank: () => void
   dismissDialogue: () => void
 }
+
+// --- Constants ---
+
+// Every round has 22 cards. After dealing 13, 9 remain drawable.
+// On each loss, 2 penalty cards are added, so round N has 22 + (N-1)*2 cards.
+const ROUND_1_DECK_SIZE = 20
+const INITIAL_HAND_SIZE = 13
+const PENALTY_CARDS_PER_LOSS = 2
 
 // --- Helpers ---
 
@@ -71,6 +82,15 @@ function shuffle<T>(arr: T[]): T[] {
       ;[a[i], a[j]] = [a[j], a[i]]
   }
   return a
+}
+
+/**
+ * Picks `count` cards from a full shuffled deck that are NOT already in `existingIds`.
+ * Guarantees no duplicates when adding penalty cards to an existing pool.
+ */
+function pickUniqueCards(count: number, existingIds: Set<string>): Card[] {
+  const pool = shuffle(buildDeck()).filter((c) => !existingIds.has(c.id))
+  return pool.slice(0, count)
 }
 
 const BIG2_RANK_ORDER: Record<string, number> = {
@@ -147,7 +167,6 @@ function resolveDialogueDebug(
     scoreRange: t.scoreRange,
   })))
 
-  // Log why each trigger passes or fails
   dialogueTriggers.forEach((t) => {
     const alreadyTriggered = triggeredDialogueIds.includes(t.id)
     const suitMatch = t.suit === dominantSuit
@@ -175,17 +194,20 @@ function resolveDialogueDebug(
 // --- Store ---
 
 export const useCardGame = create<CardGameState>((set) => ({
-  deck: shuffle(buildDeck()),
+  // Round 1: 22-card subset of a full shuffled deck
+  deck: shuffle(buildDeck()).slice(0, ROUND_1_DECK_SIZE),
   hand: [],
   selected: [],
   played: [],
+  discardPile: [],
   phase: 'playing',
   score: 0,
   suitScores: [0, 0, 0, 0],
-  drawsRemaining: 13,
+  drawsRemaining: ROUND_1_DECK_SIZE - INITIAL_HAND_SIZE,
   playsRemaining: PLAY_HAND_LIMIT,
   gameOver: false,
   gameResult: null,
+  roundNumber: 1,
   triggeredDialogueIds: [],
   activeDialoguePages: null,
   activeDialogueSuit: null,
@@ -373,6 +395,7 @@ export const useCardGame = create<CardGameState>((set) => ({
       console.log('[clearPlayed] returning state:', { gameOver, gameResult, hasActiveDialogue: !!activeDialoguePages })
       return {
         played: [],
+        discardPile: [...state.discardPile, ...state.played],
         score: newScore,
         suitScores: newSuitScores,
         phase: 'playing',
@@ -384,24 +407,75 @@ export const useCardGame = create<CardGameState>((set) => ({
       }
     }),
 
+  // Full reset — wipes everything, goes back to round 1 with a fresh 20-card deck
   resetGame: () => {
-    console.log('[resetGame] resetting all state')
+    console.log('[resetGame] resetting all state to round 1')
     return set({
-      deck: shuffle(buildDeck()),
+      deck: shuffle(buildDeck()).slice(0, ROUND_1_DECK_SIZE),
       hand: [],
       selected: [],
       played: [],
+      discardPile: [],
       phase: 'playing',
       score: 0,
       suitScores: [0, 0, 0, 0],
-      drawsRemaining: 13,
+      drawsRemaining: ROUND_1_DECK_SIZE - INITIAL_HAND_SIZE,
       playsRemaining: PLAY_HAND_LIMIT,
       gameOver: false,
       gameResult: null,
+      roundNumber: 1,
       triggeredDialogueIds: [],
       activeDialoguePages: null,
+      activeDialogueSuit: null,
     })
   },
+
+  /**
+   * Advance to the next round after a loss.
+   *
+   * New deck = every card from this round (hand + undealt deck + played pile)
+   *          + PENALTY_CARDS_PER_LOSS brand-new unique cards
+   *
+   * All reshuffled together. Cards the player saw or held all survive into
+   * the next round. drawsRemaining = new deck size − 13 (the initial deal).
+   */
+  nextRound: () =>
+    set((state) => {
+      const nextRoundNumber = state.roundNumber + 1
+
+      // Every card that existed this round: still in hand, still in deck, or accumulated in discard pile
+      const allThisRoundCards = [...state.hand, ...state.deck, ...state.discardPile]
+      const allThisRoundIds = new Set(allThisRoundCards.map((c) => c.id))
+
+      // Add fresh penalty cards (guaranteed unique)
+      const penaltyCards = pickUniqueCards(PENALTY_CARDS_PER_LOSS, allThisRoundIds)
+
+      const nextDeck = shuffle([...allThisRoundCards, ...penaltyCards])
+      const nextDrawsRemaining = nextDeck.length - INITIAL_HAND_SIZE
+
+      console.log('[nextRound] → round', nextRoundNumber)
+      console.log('[nextRound] carried cards:', allThisRoundCards.length, '| penalty:', penaltyCards.map(c => `${c.rank}${c.suit[0]}`))
+      console.log('[nextRound] new deck size:', nextDeck.length, '| drawsRemaining after deal:', nextDrawsRemaining)
+
+      return {
+        deck: nextDeck,
+        hand: [],
+        selected: [],
+        played: [],
+        discardPile: [],
+        phase: 'playing',
+        score: 0,
+        suitScores: [0, 0, 0, 0],
+        drawsRemaining: nextDrawsRemaining,
+        playsRemaining: PLAY_HAND_LIMIT,
+        gameOver: false,
+        gameResult: null,
+        roundNumber: nextRoundNumber,
+        triggeredDialogueIds: [],
+        activeDialoguePages: null,
+        activeDialogueSuit: null,
+      }
+    }),
 
   sortBySuit: () =>
     set((state) => {
@@ -427,23 +501,33 @@ export function useInitialDraw(amount: number) {
   const drawCards = useCardGame((state) => state.drawCards)
   const gameOver = useCardGame((state) => state.gameOver)
   const hand = useCardGame((state) => state.hand)
+  const roundNumber = useCardGame((state) => state.roundNumber)
   const hasDrawn = useRef(false)
+  const lastDrawnRound = useRef(0)
 
-  // Reset the guard when game ends so next reset can draw again
   useEffect(() => {
+    // When the round/game ends, clear the draw guard so the next round can draw
     if (gameOver) {
       hasDrawn.current = false
     }
   }, [gameOver])
 
   useEffect(() => {
+    // When a new round begins (hand is empty again), clear the guard for that round
+    if (hand.length === 0 && !gameOver && roundNumber !== lastDrawnRound.current) {
+      hasDrawn.current = false
+    }
+  }, [roundNumber])
+
+  useEffect(() => {
     if (hasDrawn.current) return
     if (hand.length === 0 && !gameOver) {
       hasDrawn.current = true
-      console.log('[useInitialDraw] drawing initial hand of', amount)
+      lastDrawnRound.current = roundNumber
+      console.log('[useInitialDraw] drawing initial hand of', amount, '| round', roundNumber)
       drawCards(amount)
     }
-  }, [gameOver])
+  }, [gameOver, roundNumber])
 }
 
 export function usePhaseSequence(resolvingMs = 1200, clearingMs = 600) {
